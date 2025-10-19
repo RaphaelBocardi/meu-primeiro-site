@@ -1,0 +1,723 @@
+// Shopping Cart
+let cart = [];
+
+// Pagination
+let currentPage = 1;
+const itemsPerPage = 12;
+let allFilteredProducts = [];
+
+// Debounce timer
+let searchDebounceTimer = null;
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', () => {
+    loadProducts();
+    setupEventListeners();
+    loadCartFromStorage();
+    addAnimationStyles();
+    checkAuthState();
+    setupSidebar();
+});
+
+// Load products into the grid
+function loadProducts(filter = 'all', resetPage = true) {
+    if (resetPage) {
+        currentPage = 1;
+    }
+
+    const productsGrid = document.getElementById('productsGrid');
+    let filteredProducts = products;
+
+    // Filter by category
+    if (filter !== 'all') {
+        filteredProducts = products.filter(p => p.category === filter);
+    }
+
+    // Apply search filter
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    if (searchTerm) {
+        filteredProducts = filteredProducts.filter(p => 
+            p.name.toLowerCase().includes(searchTerm) ||
+            p.description.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Apply price filter
+    const priceFilter = document.getElementById('priceFilter').value;
+    if (priceFilter !== 'all') {
+        filteredProducts = filteredProducts.filter(p => {
+            if (priceFilter === '0-100') return p.price <= 100;
+            if (priceFilter === '100-300') return p.price > 100 && p.price <= 300;
+            if (priceFilter === '300-500') return p.price > 300 && p.price <= 500;
+            if (priceFilter === '500+') return p.price > 500;
+            return true;
+        });
+    }
+
+    // Apply sorting
+    const sortOption = document.getElementById('sortSelect').value;
+    if (sortOption === 'price-asc') {
+        filteredProducts.sort((a, b) => a.price - b.price);
+    } else if (sortOption === 'price-desc') {
+        filteredProducts.sort((a, b) => b.price - a.price);
+    } else if (sortOption === 'name') {
+        filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    allFilteredProducts = filteredProducts;
+
+    // Pagination
+    const startIndex = 0;
+    const endIndex = currentPage * itemsPerPage;
+    const displayProducts = filteredProducts.slice(startIndex, endIndex);
+
+    // Render products
+    productsGrid.innerHTML = displayProducts.map(product => `
+        <div class="product-card" data-product-id="${product.id}">
+            <div class="product-image-container">
+                <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="product-image-fallback" style="display:none;">${product.icon}</div>
+            </div>
+            <div class="product-info">
+                <span class="product-category">${getCategoryName(product.category)}</span>
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-footer">
+                    <span class="product-price">R$ ${product.price.toFixed(2)}</span>
+                    <button type="button" class="add-to-cart-btn" onclick="addToCart(${product.id})" aria-label="Adicionar ${product.name} ao carrinho">
+                        <i class="fas fa-cart-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    // Show/hide load more button
+    updateLoadMoreButton(filteredProducts.length, endIndex);
+}
+
+// Get category display name
+function getCategoryName(category) {
+    const names = {
+        'camisas': 'Camisas',
+        'tenis': 'Tênis',
+        'chuteiras': 'Chuteiras'
+    };
+    return names[category] || category;
+}
+
+// Update load more button
+function updateLoadMoreButton(totalProducts, displayedProducts) {
+    let loadMoreBtn = document.getElementById('loadMoreBtn');
+    
+    if (!loadMoreBtn) {
+        // Create button if it doesn't exist
+        loadMoreBtn = document.createElement('button');
+        loadMoreBtn.id = 'loadMoreBtn';
+        loadMoreBtn.className = 'load-more-btn';
+        loadMoreBtn.type = 'button';
+        loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Carregar Mais Produtos';
+        loadMoreBtn.onclick = loadMoreProducts;
+        document.getElementById('productsGrid').parentElement.appendChild(loadMoreBtn);
+    }
+
+    if (displayedProducts < totalProducts) {
+        loadMoreBtn.style.display = 'block';
+        loadMoreBtn.innerHTML = `<i class="fas fa-arrow-down"></i> Carregar Mais (${totalProducts - displayedProducts} produtos)`;
+    } else {
+        loadMoreBtn.style.display = 'none';
+    }
+}
+
+// Load more products
+function loadMoreProducts() {
+    currentPage++;
+    const activeCategory = document.querySelector('nav a.active').getAttribute('data-category');
+    loadProducts(activeCategory, false);
+    showToast('Mais produtos carregados!', 'info');
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Category navigation (sidebar)
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            const category = link.getAttribute('data-category');
+            loadProducts(category);
+            closeSidebar();
+        });
+    });
+
+    // Search with debouncing
+    document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            const activeCategory = document.querySelector('.sidebar-nav a.active').getAttribute('data-category');
+            loadProducts(activeCategory);
+        }, 300);
+    });
+
+    // Filters
+    document.getElementById('sortSelect').addEventListener('change', () => {
+        const activeCategory = document.querySelector('.sidebar-nav a.active').getAttribute('data-category');
+        loadProducts(activeCategory);
+    });
+
+    document.getElementById('priceFilter').addEventListener('change', () => {
+        const activeCategory = document.querySelector('.sidebar-nav a.active').getAttribute('data-category');
+        loadProducts(activeCategory);
+    });
+
+    // Cart modal
+    document.getElementById('cartIcon').addEventListener('click', toggleCart);
+    document.getElementById('closeCart').addEventListener('click', toggleCart);
+    
+    // Close cart when clicking outside
+    document.getElementById('cartModal').addEventListener('click', (e) => {
+        if (e.target.id === 'cartModal') {
+            toggleCart();
+        }
+    });
+
+    // Checkout
+    document.getElementById('checkoutButton').addEventListener('click', checkout);
+    
+    // Contact form
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', handleContactSubmit);
+    }
+}
+
+// Add product to cart
+function addToCart(productId) {
+    const product = products.find(p => p.id === productId);
+    const existingItem = cart.find(item => item.id === productId);
+
+    if (existingItem) {
+        existingItem.quantity++;
+    } else {
+        cart.push({ ...product, quantity: 1 });
+    }
+
+    updateCart();
+    saveCartToStorage();
+    
+    // Show feedback with toast
+    showToast(`${product.name} adicionado ao carrinho!`, 'success');
+}
+
+// Remove product from cart
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    updateCart();
+    saveCartToStorage();
+}
+
+// Update product quantity
+function updateQuantity(productId, change) {
+    const item = cart.find(item => item.id === productId);
+    if (item) {
+        item.quantity += change;
+        if (item.quantity <= 0) {
+            removeFromCart(productId);
+        } else {
+            updateCart();
+            saveCartToStorage();
+        }
+    }
+}
+
+// Update cart display
+function updateCart() {
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    const cartTotal = document.getElementById('cartTotal');
+    const checkoutButton = document.getElementById('checkoutButton');
+
+    // Update count
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+    
+    // Add animation to cart count
+    if (totalItems > 0) {
+        cartCount.classList.add('cart-count-pulse');
+        setTimeout(() => cartCount.classList.remove('cart-count-pulse'), 300);
+    }
+
+    // Update total
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+
+    // Update items
+    if (cart.length === 0) {
+        cartItems.innerHTML = `
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Seu carrinho está vazio</p>
+            </div>
+        `;
+        checkoutButton.disabled = true;
+    } else {
+        cartItems.innerHTML = cart.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-image-container">
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-image-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="cart-item-image-fallback" style="display:none;">${item.icon}</div>
+                </div>
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-price">R$ ${item.price.toFixed(2)}</div>
+                    <div class="cart-item-quantity">
+                        <button type="button" class="quantity-btn" onclick="updateQuantity(${item.id}, -1)" aria-label="Diminuir quantidade">-</button>
+                        <span>${item.quantity}</span>
+                        <button type="button" class="quantity-btn" onclick="updateQuantity(${item.id}, 1)" aria-label="Aumentar quantidade">+</button>
+                    </div>
+                </div>
+                <button type="button" class="remove-item" onclick="removeFromCart(${item.id})" aria-label="Remover ${item.name}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+        checkoutButton.disabled = false;
+    }
+}
+
+// Toggle cart modal
+function toggleCart() {
+    const cartModal = document.getElementById('cartModal');
+    cartModal.classList.toggle('active');
+}
+
+// Checkout
+function checkout() {
+    if (cart.length === 0) return;
+
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Show confirmation modal instead of alert
+    showCheckoutModal(itemCount, total);
+}
+
+// Show checkout confirmation modal
+function showCheckoutModal(itemCount, total) {
+    const modal = document.createElement('div');
+    modal.className = 'checkout-modal';
+    modal.innerHTML = `
+        <div class="checkout-modal-content">
+            <div class="checkout-modal-header">
+                <i class="fas fa-check-circle"></i>
+                <h2>Pedido Confirmado!</h2>
+            </div>
+            <div class="checkout-modal-body">
+                <p><strong>Total de itens:</strong> ${itemCount}</p>
+                <p><strong>Valor total:</strong> R$ ${total.toFixed(2)}</p>
+                <p>Obrigado pela sua compra! Em breve você receberá um email com os detalhes do seu pedido.</p>
+            </div>
+            <div class="checkout-modal-footer">
+                <button type="button" class="checkout-modal-btn" onclick="closeCheckoutModal()">Fechar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+// Close checkout modal
+function closeCheckoutModal() {
+    const modal = document.querySelector('.checkout-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+    }
+    
+    cart = [];
+    updateCart();
+    saveCartToStorage();
+    toggleCart();
+    showToast('Pedido finalizado com sucesso!', 'success');
+}
+
+// Save cart to localStorage
+function saveCartToStorage() {
+    localStorage.setItem('sportshop_cart', JSON.stringify(cart));
+}
+
+// Load cart from localStorage
+function loadCartFromStorage() {
+    const savedCart = localStorage.getItem('sportshop_cart');
+    if (savedCart) {
+        cart = JSON.parse(savedCart);
+        updateCart();
+    }
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle'
+    };
+    
+    toast.innerHTML = `
+        <i class="fas ${icons[type] || icons.info}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Contact form handler
+function handleContactSubmit(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const name = form.querySelector('#contactName').value.trim();
+    const email = form.querySelector('#contactEmail').value.trim();
+    const message = form.querySelector('#contactMessage').value.trim();
+    
+    // Validation
+    if (!name || !email || !message) {
+        showToast('Por favor, preencha todos os campos!', 'error');
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        showToast('Por favor, insira um email válido!', 'error');
+        return;
+    }
+    
+    // Simulate sending (in real app, would send to backend)
+    showToast('Mensagem enviada com sucesso! Entraremos em contato em breve.', 'success');
+    form.reset();
+}
+
+// Email validation
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Scroll to products
+function scrollToProducts() {
+    document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Add animation styles
+function addAnimationStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .cart-count-pulse {
+            animation: pulse 0.3s ease;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            right: 20px;
+            background: white;
+            color: var(--secondary-color);
+            padding: 1rem 1.5rem;
+            border-radius: 0;
+            border-left: 3px solid;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 280px;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            bottom: 20px;
+        }
+        
+        .toast-success {
+            border-left-color: #28a745;
+        }
+        
+        .toast-success i {
+            color: #28a745;
+        }
+        
+        .toast-error {
+            border-left-color: #dc3545;
+        }
+        
+        .toast-error i {
+            color: #dc3545;
+        }
+        
+        .toast-info {
+            border-left-color: #000000;
+        }
+        
+        .toast-info i {
+            color: #000000;
+        }
+        
+        .toast-warning {
+            border-left-color: #D4AF37;
+        }
+        
+        .toast-warning i {
+            color: #D4AF37;
+        }
+        
+        .toast i {
+            font-size: 1.1rem;
+        }
+        
+        .checkout-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .checkout-modal.active {
+            opacity: 1;
+        }
+        
+        .checkout-modal-content {
+            background: white;
+            border-radius: 0;
+            max-width: 480px;
+            width: 90%;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        
+        .checkout-modal.active .checkout-modal-content {
+            transform: scale(1);
+        }
+        
+        .checkout-modal-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+        }
+        
+        .checkout-modal-header i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .checkout-modal-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .checkout-modal-body {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .checkout-modal-body p {
+            margin: 0.75rem 0;
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+        
+        .checkout-modal-footer {
+            padding: 1rem 2rem 2rem;
+            text-align: center;
+        }
+        
+        .checkout-modal-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.9rem 2.5rem;
+            border-radius: 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: background 0.3s;
+        }
+        
+        .checkout-modal-btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        .load-more-btn {
+            display: block;
+            margin: 3rem auto;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.9rem 2.5rem;
+            border-radius: 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s;
+        }
+        
+        .load-more-btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        .load-more-btn i {
+            margin-right: 0.5rem;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Sidebar functions
+function setupSidebar() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarLogout = document.getElementById('sidebarLogout');
+    const userIcon = document.getElementById('userIcon');
+    
+    if (menuToggle) {
+        menuToggle.addEventListener('click', openSidebar);
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+    
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', closeSidebar);
+    }
+    
+    if (sidebarLogout) {
+        sidebarLogout.addEventListener('click', handleLogout);
+    }
+    
+    if (userIcon) {
+        userIcon.addEventListener('click', handleUserIconClick);
+    }
+}
+
+function openSidebar() {
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    
+    if (sidebarOverlay) sidebarOverlay.classList.add('active');
+    if (sidebarMenu) sidebarMenu.classList.add('active');
+}
+
+function closeSidebar() {
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+    if (sidebarMenu) sidebarMenu.classList.remove('active');
+}
+
+// Auth functions
+function checkAuthState() {
+    const currentUser = getCurrentUser();
+    
+    if (currentUser) {
+        updateUIForLoggedInUser(currentUser);
+    }
+}
+
+function getCurrentUser() {
+    const userJSON = localStorage.getItem('sportshop_current_user');
+    return userJSON ? JSON.parse(userJSON) : null;
+}
+
+function updateUIForLoggedInUser(user) {
+    const userIconDefault = document.getElementById('userIconDefault');
+    const userAvatar = document.getElementById('userAvatar');
+    const sidebarLogin = document.getElementById('sidebarLogin');
+    const sidebarRegister = document.getElementById('sidebarRegister');
+    const sidebarLogout = document.getElementById('sidebarLogout');
+    
+    if (userIconDefault && userAvatar && user.photo) {
+        userIconDefault.style.display = 'none';
+        userAvatar.src = user.photo;
+        userAvatar.alt = user.name;
+        userAvatar.style.display = 'block';
+    }
+    
+    if (sidebarLogin) sidebarLogin.style.display = 'none';
+    if (sidebarRegister) sidebarRegister.style.display = 'none';
+    if (sidebarLogout) sidebarLogout.style.display = 'block';
+}
+
+function handleUserIconClick() {
+    const currentUser = getCurrentUser();
+    
+    if (currentUser) {
+        // User is logged in, open sidebar to show profile options
+        openSidebar();
+    } else {
+        // User is not logged in, redirect to login
+        window.location.href = 'login.html';
+    }
+}
+
+function handleLogout() {
+    localStorage.removeItem('sportshop_current_user');
+    localStorage.removeItem('sportshop_remember');
+    showToast('Logout realizado com sucesso!', 'success');
+    
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}

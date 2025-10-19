@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SportShop - As melhores camisas esportivas, tênis e chuteiras com os melhores preços. Loja online de artigos esportivos de qualidade.">
+    <meta name="keywords" content="camisas esportivas, tênis, chuteiras, artigos esportivos, loja de esportes">
+    <meta name="author" content="SportShop">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SportShop - Loja de Esportes Online">
+    <meta property="og:description" content="As melhores camisas, tênis e chuteiras com os melhores preços!">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=630&fit=crop">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SportShop - Loja de Esportes Online">
+    <meta name="twitter:description" content="As melhores camisas, tênis e chuteiras com os melhores preços!">
+    
+    <title>SportShop - Loja de Esportes | Camisas, Tênis e Chuteiras</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏀</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#products" class="skip-to-main">Pular para o conteúdo principal</a>
+    
+    <!-- Header -->
+    <header role="banner">
+        <div class="container">
+            <button type="button" class="menu-toggle" id="menuToggle" aria-label="Abrir menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <i class="fas fa-basketball-ball" aria-hidden="true"></i>
+                <h1>SportShop</h1>
+            </div>
+            <div class="header-actions">
+                <div class="user-icon" id="userIcon" role="button" aria-label="Perfil do usuário" tabindex="0">
+                    <img src="" alt="Foto de perfil" class="user-avatar" id="userAvatar" style="display:none;">
+                    <i class="fas fa-user" id="userIconDefault" aria-hidden="true"></i>
+                </div>
+                <div class="cart-icon" id="cartIcon" role="button" aria-label="Abrir carrinho de compras" tabindex="0">
+                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                    <span class="cart-count" id="cartCount" aria-label="Quantidade de itens no carrinho">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-menu" id="sidebarMenu" role="navigation" aria-label="Menu lateral">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="#" class="active" data-category="all" role="button">Todos os Produtos</a></li>
+            <li><a href="#" data-category="camisas" role="button">Camisas</a></li>
+            <li><a href="#" data-category="tenis" role="button">Tênis</a></li>
+            <li><a href="#" data-category="chuteiras" role="button">Chuteiras</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#contact" class="sidebar-link">Contato</a>
+            <div class="sidebar-user" id="sidebarUser">
+                <a href="login.html" class="sidebar-link" id="sidebarLogin">Entrar</a>
+                <a href="cadastro.html" class="sidebar-link" id="sidebarRegister">Cadastrar</a>
+                <button type="button" class="sidebar-link logout-btn" id="sidebarLogout" style="display:none;">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" role="banner">
+        <div class="hero-content">
+            <h2>Sua Loja de Esportes</h2>
+            <p>Produtos de qualidade para você alcançar seus objetivos</p>
+            <button type="button" class="cta-button" onclick="scrollToProducts()">Explorar</button>
+        </div>
+    </section>
+
+    <!-- Search and Filter -->
+    <section class="filter-section" role="search" aria-label="Pesquisa e filtros">
+        <div class="container">
+            <div class="search-bar">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input type="text" id="searchInput" placeholder="Buscar produtos..." aria-label="Campo de busca de produtos">
+            </div>
+            <div class="filter-options">
+                <select id="sortSelect" aria-label="Ordenar produtos">
+                    <option value="default">Ordenar por</option>
+                    <option value="price-asc">Menor Preço</option>
+                    <option value="price-desc">Maior Preço</option>
+                    <option value="name">Nome A-Z</option>
+                </select>
+                <select id="priceFilter" aria-label="Filtrar por preço">
+                    <option value="all">Todas as Faixas</option>
+                    <option value="0-100">Até R$ 100</option>
+                    <option value="100-300">R$ 100 - R$ 300</option>
+                    <option value="300-500">R$ 300 - R$ 500</option>
+                    <option value="500+">Acima de R$ 500</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section" id="products" role="main">
+        <div class="container">
+            <h2 class="section-title">Nossos Produtos</h2>
+            <div class="products-grid" id="productsGrid" role="list" aria-label="Lista de produtos">
+                <!-- Products will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Shopping Cart Modal -->
+    <div class="cart-modal" id="cartModal" role="dialog" aria-labelledby="cartModalTitle" aria-modal="true">
+        <div class="cart-content">
+            <div class="cart-header">
+                <h2 id="cartModalTitle">Carrinho de Compras</h2>
+                <button type="button" class="close-cart" id="closeCart" aria-label="Fechar carrinho">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <!-- Cart items will be loaded here -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Total:</span>
+                    <span id="cartTotal" aria-live="polite">R$ 0,00</span>
+                </div>
+                <button type="button" class="checkout-button" id="checkoutButton">Finalizar Compra</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <h2>Entre em Contato</h2>
+            <form class="contact-form" id="contactForm" aria-label="Formulário de contato">
+                <div class="form-group">
+                    <label for="contactName">Nome *</label>
+                    <input type="text" id="contactName" name="name" required aria-required="true" placeholder="Seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">Email *</label>
+                    <input type="email" id="contactEmail" name="email" required aria-required="true" placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="contactMessage">Mensagem *</label>
+                    <textarea id="contactMessage" name="message" required aria-required="true" placeholder="Digite sua mensagem aqui..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Enviar Mensagem</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Sobre Nós</h3>
+                    <p>A melhor loja de artigos esportivos online. Produtos de qualidade com os melhores preços.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contato</h3>
+                    <p><i class="fas fa-envelope" aria-hidden="true"></i> contato@sportshop.com</p>
+                    <p><i class="fas fa-phone" aria-hidden="true"></i> (11) 1234-5678</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Redes Sociais</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SportShop. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="products.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

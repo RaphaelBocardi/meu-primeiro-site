@@ -3,126 +3,1075 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loja de Esportes - Camisas, Tênis e Chuteiras</title>
+    <title>SportShop - App de Esportes</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="SportShop - Camisas de futebol, tênis, chuteiras e artigos esportivos">
+    <meta name="keywords" content="camisas de futebol, tênis esportivos, chuteiras, artigos esportivos, sportshop">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <div class="logo">
-                <i class="fas fa-basketball-ball"></i>
-                <h1>SportShop</h1>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="#" class="active" data-category="all">Todos</a></li>
-                    <li><a href="#" data-category="camisas">Camisas</a></li>
-                    <li><a href="#" data-category="tenis">Tênis</a></li>
-                    <li><a href="#" data-category="chuteiras">Chuteiras</a></li>
-                </ul>
-            </nav>
-            <div class="cart-icon" id="cartIcon">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count" id="cartCount">0</span>
-            </div>
+<body class="app-body">
+    <!-- Search Bar (Top Fixed) -->
+    <div class="app-search-bar">
+        <button class="filter-btn" id="filterBtn" aria-label="Filtros">
+            <i class="fas fa-sliders"></i>
+        </button>
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Buscar produtos..." aria-label="Buscar produtos">
+            <button class="voice-search-btn" aria-label="Busca por voz">
+                <i class="fas fa-microphone"></i>
+            </button>
         </div>
-    </header>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h2>Bem-vindo à SportShop</h2>
-            <p>As melhores camisas, tênis e chuteiras para você!</p>
-            <button class="cta-button" onclick="scrollToProducts()">Ver Produtos</button>
-        </div>
-    </section>
-
-    <!-- Search and Filter -->
-    <section class="filter-section">
-        <div class="container">
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Buscar produtos...">
+    <!-- Main Content -->
+    <main class="app-main">
+        <!-- Landing Page (Home) -->
+        <section class="landing-page" id="landingPage">
+            <!-- Banner Rotativo -->
+            <div class="banner-carousel">
+                <div class="carousel-container">
+                    <div class="carousel-slide active">
+                        <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=1200&h=500&fit=crop&q=80" alt="Adidas Adizero Adios Pro">
+                        <div class="carousel-content">
+                            <h2>Adidas Adizero Adios Pro</h2>
+                            <p>Performance de Elite</p>
+                            <button class="carousel-btn" onclick="filterByCategory('tenis')">COMPRAR AGORA</button>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="https://images.unsplash.com/photo-1551854838-4f6e2e18f0e3?w=1200&h=500&fit=crop&q=80" alt="Camisas Champions League">
+                        <div class="carousel-content">
+                            <h2>Champions League 24/25</h2>
+                            <p>Camisas Oficiais</p>
+                            <button class="carousel-btn" onclick="filterByCategory('camisas')">VER COLEÇÃO</button>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="https://images.unsplash.com/photo-1511886929837-354d827aae26?w=1200&h=500&fit=crop&q=80" alt="Chuteiras Profissionais">
+                        <div class="carousel-content">
+                            <h2>Chuteiras Profissionais</h2>
+                            <p>Nike & Adidas</p>
+                            <button class="carousel-btn" onclick="filterByCategory('chuteiras')">CONFERIR</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn-prev" onclick="prevSlide()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="carousel-btn-next" onclick="nextSlide()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="carousel-indicators">
+                    <span class="indicator active" onclick="goToSlide(0)"></span>
+                    <span class="indicator" onclick="goToSlide(1)"></span>
+                    <span class="indicator" onclick="goToSlide(2)"></span>
+                </div>
             </div>
-            <div class="filter-options">
-                <select id="sortSelect">
-                    <option value="default">Ordenar por</option>
-                    <option value="price-asc">Menor Preço</option>
-                    <option value="price-desc">Maior Preço</option>
-                    <option value="name">Nome A-Z</option>
-                </select>
-                <select id="priceFilter">
-                    <option value="all">Todas as Faixas</option>
-                    <option value="0-100">Até R$ 100</option>
-                    <option value="100-300">R$ 100 - R$ 300</option>
-                    <option value="300-500">R$ 300 - R$ 500</option>
-                    <option value="500+">Acima de R$ 500</option>
-                </select>
-            </div>
-        </div>
-    </section>
 
-    <!-- Products Section -->
-    <section class="products-section" id="products">
-        <div class="container">
-            <h2 class="section-title">Nossos Produtos</h2>
-            <div class="products-grid" id="productsGrid">
+            <!-- Seção Destaques -->
+            <div class="home-section">
+                <div class="section-title">
+                    <h2>Destaques</h2>
+                    <button class="section-see-all" onclick="loadProducts('all')">Ver todos</button>
+                </div>
+                <div class="products-carousel" id="destaquesCarousel">
+                    <!-- Produtos em destaque serão carregados aqui -->
+                </div>
+            </div>
+
+            <!-- Seção Ofertas -->
+            <div class="home-section">
+                <div class="section-title">
+                    <h2>Ofertas</h2>
+                    <button class="section-see-all" onclick="loadProducts('all')">Ver todos</button>
+                </div>
+                <div class="products-carousel" id="ofertasCarousel">
+                    <!-- Produtos em oferta serão carregados aqui -->
+                </div>
+            </div>
+
+            <!-- Seção Lançamentos -->
+            <div class="home-section">
+                <div class="section-title">
+                    <h2>Lançamentos</h2>
+                    <button class="section-see-all" onclick="loadProducts('all')">Ver todos</button>
+                </div>
+                <div class="products-carousel" id="lancamentosCarousel">
+                    <!-- Lançamentos serão carregados aqui -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Sections -->
+        <section class="product-section" id="produtos" style="display: none;">
+            <div class="section-header">
+                <h2>LANÇAMENTOS</h2>
+                <div class="filters-inline">
+                    <select id="sortSelect" aria-label="Ordenar produtos">
+                        <option value="default">Ordenar por</option>
+                        <option value="price-asc">Menor preço</option>
+                        <option value="price-desc">Maior preço</option>
+                        <option value="name">Nome (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid" role="list">
                 <!-- Products will be loaded here by JavaScript -->
             </div>
-        </div>
-    </section>
 
-    <!-- Shopping Cart Modal -->
-    <div class="cart-modal" id="cartModal">
-        <div class="cart-content">
-            <div class="cart-header">
-                <h2>Carrinho de Compras</h2>
-                <button class="close-cart" id="closeCart">
+            <!-- Load More Button -->
+            <div class="load-more-container">
+                <button id="loadMoreBtn" class="load-more-btn" style="display: none;">
+                    <i class="fas fa-plus-circle"></i> VER MAIS PRODUTOS
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation (App Style) -->
+    <nav class="bottom-nav">
+        <button class="nav-item nav-item-home" data-page="home" aria-label="Home">
+            <i class="fas fa-house"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" data-page="categorias" aria-label="Categorias">
+            <i class="fas fa-store"></i>
+            <span>Categorias</span>
+        </button>
+        <button class="nav-item active" data-page="favoritos" aria-label="Favoritos">
+            <i class="far fa-heart"></i>
+            <span>Favoritos</span>
+        </button>
+        <button class="nav-item" data-page="carrinho" aria-label="Carrinho">
+            <div class="nav-icon-wrapper">
+                <svg class="cart-icon-empty" id="cartIconEmpty" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 22C6.45 22 5.979 21.804 5.587 21.412C5.195 21.02 4.99934 20.5493 5 20C5 19.45 5.196 18.979 5.588 18.587C5.98 18.195 6.45067 17.9993 7 18C7.55 18 8.021 18.196 8.413 18.588C8.805 18.98 9.00067 19.4507 9 20C9 20.55 8.804 21.021 8.412 21.413C8.02 21.805 7.54933 22.0007 7 22ZM17 22C16.45 22 15.979 21.804 15.587 21.412C15.195 21.02 14.9993 20.5493 15 20C15 19.45 15.196 18.979 15.588 18.587C15.98 18.195 16.4507 17.9993 17 18C17.55 18 18.021 18.196 18.413 18.588C18.805 18.98 19.0007 19.4507 19 20C19 20.55 18.804 21.021 18.412 21.413C18.02 21.805 17.5493 22.0007 17 22ZM6.15 6L8.55 11H15.55L18.3 6H6.15ZM5.2 4H19.95C20.3333 4 20.625 4.17067 20.825 4.512C21.025 4.85333 21.0333 5.2 20.85 5.55L17.3 11.95C17.1167 12.2833 16.871 12.5417 16.563 12.725C16.255 12.9083 15.9173 13 15.55 13H8.1L7 15H19V17H7C6.25 17 5.68333 16.6707 5.3 16.012C4.91667 15.3533 4.9 14.7 5.25 14.05L6.6 11.6L3 4H1V2H4.25L5.2 4Z" fill="currentColor"/>
+                </svg>
+                <i class="fas fa-cart-shopping cart-icon-full" id="cartIconFull" style="display: none;"></i>
+                <span class="cart-badge" id="cartBadge">0</span>
+            </div>
+            <span>Carrinho</span>
+        </button>
+        <button class="nav-item" data-page="perfil" aria-label="Perfil">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </button>
+    </nav>
+
+    <!-- Categories Sidebar (Left) -->
+    <div class="categories-overlay" id="categoriesOverlay"></div>
+    <aside class="categories-sidebar" id="categoriesSidebar">
+        <div class="categories-list">
+            <button class="category-item" data-category="camisas">
+                <i class="fas fa-tshirt"></i>
+                <span>Camisas de Futebol</span>
+            </button>
+            <button class="category-item" data-category="tenis">
+                <i class="fas fa-running"></i>
+                <span>Tênis Esportivos</span>
+            </button>
+            <button class="category-item" data-category="chuteiras">
+                <i class="fas fa-futbol"></i>
+                <span>Chuteiras</span>
+            </button>
+            <button class="category-item" data-category="calcoes">
+                <i class="fas fa-person-running"></i>
+                <span>Calções</span>
+            </button>
+            <button class="category-item" data-category="acessorios">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Acessórios</span>
+            </button>
+        </div>
+        <div class="categories-footer">
+            <button class="categories-close-btn" id="categoriesClose">
+                FECHAR
+            </button>
+        </div>
+    </aside>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-items" id="cartItems">
+            <p class="empty-cart">Seu carrinho está vazio</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-totals-container">
+                <div class="cart-total-row">
+                    <span class="total-label">TOTAL:</span>
+                    <span id="cartTotal" class="total-value">R$ 0,00</span>
+                </div>
+                <div class="cart-installment-row">
+                    <span class="installment-label">PARCELAR:</span>
+                    <div class="installment-value-wrapper">
+                        <button class="installment-selector-btn" id="installmentSelectorBtn">
+                            <span id="selectedInstallments">12x</span>
+                            <span class="installment-separator">de</span>
+                            <span id="installmentValue" class="installment-value-inline">R$ 0,00</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="cart-actions">
+                <button class="back-btn" id="backBtn" aria-label="Fechar">
+                    FECHAR
+                </button>
+                <button class="empty-cart-btn" id="emptyCartBtn" aria-label="Esvaziar carrinho">
+                    <i class="fas fa-trash-alt"></i> ESVAZIAR
+                </button>
+                <button class="checkout-btn" id="checkoutBtn" disabled aria-label="Finalizar compra">
+                    <i class="fas fa-check-circle"></i> FINALIZAR
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Profile Sidebar (Right) -->
+    <div class="profile-overlay" id="profileOverlay"></div>
+    <aside class="profile-sidebar" id="profileSidebar">
+        <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar-section" id="profileAvatarSection">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user" id="profileAvatarIcon"></i>
+                        <img src="" alt="Foto de perfil" id="profileAvatarImg" style="display: none;">
+                    </div>
+                    <button class="profile-edit-photo" id="editPhotoBtn" style="display: none;">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <input type="file" id="sidebarPhotoInput" accept="image/*" style="display: none;">
+                </div>
+                
+                <!-- Logged In User Info -->
+                <div class="profile-user-info" id="profileUserInfo" style="display: none;">
+                    <h3 id="profileUserName">Nome do Usuário</h3>
+                    <p class="profile-user-id">ID: <span id="profileUserId">230497235</span></p>
+                </div>
+                
+                <!-- Not Logged In -->
+                <div class="profile-login-section" id="profileLoginSection">
+                    <button class="profile-login-btn" id="profileLoginBtn">
+                        <i class="fas fa-right-to-bracket"></i> LOGIN / CADASTRAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Menu -->
+            <div class="profile-menu">
+                <button class="profile-menu-item profile-menu-logged-only" data-action="meus-dados" style="display: none;">
+                    <i class="fas fa-address-card"></i>
+                    <span>Meus Dados</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="profile-menu-item profile-menu-logged-only" data-action="metodos-pagamento" style="display: none;">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Métodos de Pagamento</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="profile-menu-item profile-menu-logged-only" data-action="meus-pedidos" style="display: none;">
+                    <i class="fas fa-box"></i>
+                    <span>Meus Pedidos</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="profile-menu-item" data-action="suporte">
+                    <i class="fas fa-headset"></i>
+                    <span>Suporte</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="profile-menu-item" data-action="configuracoes">
+                    <i class="fas fa-gear"></i>
+                    <span>Configurações</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="profile-menu-item" data-action="sobre">
+                    <i class="fas fa-circle-info"></i>
+                    <span>Sobre</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="profile-menu-item logout-btn" id="logoutBtn" style="display: none;">
+                    <i class="fas fa-right-from-bracket"></i>
+                    <span>Sair da Conta</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Profile Footer - Social Media -->
+        <div class="profile-footer">
+            <p class="profile-footer-title">Siga-nos</p>
+            <div class="profile-social-icons">
+                <a href="https://www.instagram.com/imbativelsports" target="_blank" class="social-icon instagram" aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://www.facebook.com/" target="_blank" class="social-icon facebook" aria-label="Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://www.tiktok.com/" target="_blank" class="social-icon tiktok" aria-label="TikTok">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+                <a href="https://www.youtube.com/" target="_blank" class="social-icon youtube" aria-label="YouTube">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="https://twitter.com/" target="_blank" class="social-icon twitter" aria-label="X (Twitter)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="white"/>
+                    </svg>
+                </a>
+                <a href="https://wa.me/5519999929630" target="_blank" class="social-icon whatsapp" aria-label="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+            </div>
+            <p class="profile-footer-copyright">© 2025 SportShop. Todos os direitos reservados.</p>
+        </div>
+    </aside>
+
+    <!-- Contact Sidebar (Fale Conosco) -->
+    <div class="contact-overlay" id="contactOverlay"></div>
+    <aside class="contact-sidebar" id="contactSidebar">
+        <div class="contact-menu">
+            <a href="https://wa.me/5519999929630" target="_blank" class="contact-menu-item">
+                <i class="fab fa-whatsapp"></i>
+                <div class="contact-item-content">
+                    <span class="contact-item-title">WhatsApp</span>
+                    <span class="contact-item-desc">Fale conosco pelo WhatsApp</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            <a href="mailto:contato@sportshop.com" class="contact-menu-item">
+                <i class="fas fa-envelope"></i>
+                <div class="contact-item-content">
+                    <span class="contact-item-title">E-mail</span>
+                    <span class="contact-item-desc">contato@sportshop.com</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            <button class="contact-menu-item" id="chatbotBtn">
+                <i class="fas fa-robot"></i>
+                <div class="contact-item-content">
+                    <span class="contact-item-title">ChatBot</span>
+                    <span class="contact-item-desc">Assistente virtual 24h</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="contact-footer">
+            <button class="contact-close-btn" id="contactCloseBtn">
+                FECHAR
+            </button>
+        </div>
+    </aside>
+
+    <!-- Meus Dados Page -->
+    <div class="page-overlay" id="meusDadosOverlay"></div>
+    <aside class="page-sidebar" id="meusDadosPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="meusDadosBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Meus Dados</h2>
+        </div>
+        <div class="page-content">
+            <div class="user-data-section">
+                <!-- Nome - EDITÁVEL -->
+                <div class="data-item editable" data-field="nome">
+                    <i class="fas fa-user"></i>
+                    <div class="data-info">
+                        <label>Nome Completo</label>
+                        <div class="data-value-container">
+                            <span class="data-value" id="dadosNome">-</span>
+                            <input type="text" class="data-input" id="inputNome" style="display: none;">
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-field="nome">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" data-field="nome">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="cancel-btn" data-field="nome">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Email - EDITÁVEL -->
+                <div class="data-item editable" data-field="email">
+                    <i class="fas fa-envelope"></i>
+                    <div class="data-info">
+                        <label>Email <span class="verification-badge" id="emailVerificationBadge"></span></label>
+                        <div class="data-value-container">
+                            <span class="data-value" id="dadosEmail">-</span>
+                            <input type="email" class="data-input" id="inputEmail" style="display: none;">
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-field="email">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" data-field="email">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="cancel-btn" data-field="email">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Celular - EDITÁVEL -->
+                <div class="data-item editable" data-field="celular">
+                    <i class="fas fa-phone"></i>
+                    <div class="data-info">
+                        <label>Celular <span class="verification-badge" id="celularVerificationBadge"></span></label>
+                        <div class="data-value-container">
+                            <span class="data-value" id="dadosCelular">-</span>
+                            <input type="tel" class="data-input" id="inputCelular" style="display: none;" placeholder="(00) 00000-0000">
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-field="celular">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" data-field="celular">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="cancel-btn" data-field="celular">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CPF - NÃO EDITÁVEL -->
+                <div class="data-item">
+                    <i class="fas fa-id-card"></i>
+                    <div class="data-info">
+                        <label>CPF</label>
+                        <span class="data-value" id="dadosCPF">-</span>
+                    </div>
+                    <span class="locked-badge">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                </div>
+                
+                <!-- Data de Nascimento - EDITÁVEL -->
+                <div class="data-item editable" data-field="dataNascimento">
+                    <i class="fas fa-calendar"></i>
+                    <div class="data-info">
+                        <label>Data de Nascimento</label>
+                        <div class="data-value-container">
+                            <span class="data-value" id="dadosDataNascimento">-</span>
+                            <input type="date" class="data-input" id="inputDataNascimento" style="display: none;">
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-field="dataNascimento">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" data-field="dataNascimento">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="cancel-btn" data-field="dataNascimento">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Gênero - EDITÁVEL -->
+                <div class="data-item editable" data-field="genero">
+                    <i class="fas fa-venus-mars"></i>
+                    <div class="data-info">
+                        <label>Gênero</label>
+                        <div class="data-value-container">
+                            <span class="data-value" id="dadosGenero">-</span>
+                            <select class="data-input" id="inputGenero" style="display: none;">
+                                <option value="">Selecione</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                                <option value="outro">Outro</option>
+                                <option value="nao-informar">Prefiro não informar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-field="genero">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" data-field="genero">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="cancel-btn" data-field="genero">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Endereço Padrão - EDITÁVEL -->
+                <div class="data-item editable" data-field="endereco">
+                    <i class="fas fa-location-dot"></i>
+                    <div class="data-info">
+                        <label>Endereço Padrão</label>
+                        <div class="data-value-container">
+                            <span class="data-value" id="dadosEndereco">-</span>
+                            <textarea class="data-input data-textarea" id="inputEndereco" rows="4" style="display: none;" placeholder="Digite o endereço completo"></textarea>
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-field="endereco">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" data-field="endereco">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="cancel-btn" data-field="endereco">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <p>Apenas o <i class="fas fa-lock"></i> CPF não pode ser alterado por questões de segurança. Ao alterar Email ou Celular, você precisará verificar o novo contato.</p>
+            </div>
+            
+            <div class="danger-zone">
+                <h3>Zona de Perigo</h3>
+                <p>Esta ação é irreversível e todos os seus dados serão permanentemente excluídos.</p>
+                <button class="btn-danger" id="deleteAccountBtn">
+                    <i class="fas fa-trash"></i>
+                    Excluir Minha Conta
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div class="modal-overlay" id="deleteAccountOverlay"></div>
+    <div class="modal" id="deleteAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmar Exclusão de Conta</h3>
+                <button class="modal-close" id="deleteAccountCloseBtn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="cart-items" id="cartItems">
-                <!-- Cart items will be loaded here -->
-            </div>
-            <div class="cart-footer">
-                <div class="cart-total">
-                    <span>Total:</span>
-                    <span id="cartTotal">R$ 0,00</span>
+            <div class="modal-body">
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h4>Atenção!</h4>
+                        <p>Você está prestes a excluir permanentemente sua conta. Esta ação não pode ser desfeita.</p>
+                        <p><strong>Todos os seus dados serão perdidos:</strong></p>
+                        <ul>
+                            <li>Informações pessoais</li>
+                            <li>Endereços salvos</li>
+                            <li>Métodos de pagamento</li>
+                            <li>Histórico de pedidos</li>
+                        </ul>
+                    </div>
                 </div>
-                <button class="checkout-button" id="checkoutButton">Finalizar Compra</button>
+                
+                <div class="form-group">
+                    <label for="deleteConfirmPassword">Digite sua senha para confirmar</label>
+                    <input type="password" id="deleteConfirmPassword" placeholder="Sua senha" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="deleteAccountCancelBtn">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteAccountBtn">
+                    <i class="fas fa-trash"></i>
+                    Excluir Conta Definitivamente
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Sobre Nós</h3>
-                    <p>A melhor loja de artigos esportivos online. Produtos de qualidade com os melhores preços.</p>
+    <!-- Email Verification Modal -->
+    <div class="modal-overlay" id="emailVerificationOverlay"></div>
+    <div class="modal" id="emailVerificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Verificar Email</h3>
+                <button class="modal-close" id="emailVerificationCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="verification-info">
+                    <i class="fas fa-envelope-circle-check"></i>
+                    <p>Enviamos um código de verificação de 6 dígitos para:</p>
+                    <p class="verification-target" id="emailVerificationTarget">email@example.com</p>
+                    <p class="verification-note">Verifique sua caixa de entrada e spam.</p>
                 </div>
-                <div class="footer-section">
-                    <h3>Contato</h3>
-                    <p><i class="fas fa-envelope"></i> contato@sportshop.com</p>
-                    <p><i class="fas fa-phone"></i> (11) 1234-5678</p>
+                
+                <div class="form-group">
+                    <label for="emailVerificationCode">Código de Verificação</label>
+                    <input type="text" id="emailVerificationCode" placeholder="000000" maxlength="6" class="code-input">
                 </div>
-                <div class="footer-section">
-                    <h3>Redes Sociais</h3>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                
+                <div class="verification-actions">
+                    <button class="btn-link" id="resendEmailCodeBtn">
+                        <i class="fas fa-rotate"></i>
+                        Reenviar código <span id="emailCountdown"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="emailVerificationCancelBtn">Cancelar</button>
+                <button class="btn-primary" id="confirmEmailVerificationBtn">
+                    <i class="fas fa-check"></i>
+                    Verificar Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phone Verification Modal -->
+    <div class="modal-overlay" id="phoneVerificationOverlay"></div>
+    <div class="modal" id="phoneVerificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Verificar Celular</h3>
+                <button class="modal-close" id="phoneVerificationCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="verification-info">
+                    <i class="fas fa-mobile-screen-button"></i>
+                    <p>Enviamos um código de verificação de 6 dígitos via SMS/WhatsApp para:</p>
+                    <p class="verification-target" id="phoneVerificationTarget">(00) 00000-0000</p>
+                    <p class="verification-note">O código pode levar alguns segundos para chegar.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneVerificationCode">Código de Verificação</label>
+                    <input type="text" id="phoneVerificationCode" placeholder="000000" maxlength="6" class="code-input">
+                </div>
+                
+                <div class="verification-actions">
+                    <button class="btn-link" id="resendPhoneCodeBtn">
+                        <i class="fas fa-rotate"></i>
+                        Reenviar código <span id="phoneCountdown"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="phoneVerificationCancelBtn">Cancelar</button>
+                <button class="btn-primary" id="confirmPhoneVerificationBtn">
+                    <i class="fas fa-check"></i>
+                    Verificar Celular
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métodos de Pagamento Page -->
+    <div class="page-overlay" id="metodosPagamentoOverlay"></div>
+    <aside class="page-sidebar" id="metodosPagamentoPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="metodosPagamentoBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Métodos de Pagamento</h2>
+        </div>
+        <div class="page-content">
+            <p>Conteúdo da página Métodos de Pagamento em desenvolvimento...</p>
+        </div>
+    </aside>
+
+    <!-- Meus Pedidos Page -->
+    <div class="page-overlay" id="meusPedidosOverlay"></div>
+    <aside class="page-sidebar" id="meusPedidosPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="meusPedidosBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Meus Pedidos</h2>
+        </div>
+        <div class="page-content">
+            <p>Conteúdo da página Meus Pedidos em desenvolvimento...</p>
+        </div>
+    </aside>
+
+    <!-- Configurações Page -->
+    <div class="page-overlay" id="configuracoesOverlay"></div>
+    <aside class="page-sidebar" id="configuracoesPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="configuracoesBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Configurações</h2>
+        </div>
+        <div class="page-content">
+            <div class="settings-section">
+                <h3 class="settings-title">Preferências</h3>
+                
+                <!-- Notificações -->
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <i class="fas fa-bell"></i>
+                        <div>
+                            <h4>Notificações</h4>
+                            <p>Receba alertas sobre ofertas e pedidos</p>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="notificationsToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Tema -->
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <i class="fas fa-palette"></i>
+                        <div>
+                            <h4>Tema</h4>
+                            <p>Escolha o tema de sua preferência</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-options">
+                    <label class="theme-option">
+                        <input type="radio" name="theme" value="light" id="themeLight">
+                        <div class="theme-card">
+                            <i class="fas fa-sun"></i>
+                            <span>Claro</span>
+                        </div>
+                    </label>
+                    <label class="theme-option">
+                        <input type="radio" name="theme" value="dark" id="themeDark">
+                        <div class="theme-card">
+                            <i class="fas fa-moon"></i>
+                            <span>Escuro</span>
+                        </div>
+                    </label>
+                    <label class="theme-option">
+                        <input type="radio" name="theme" value="auto" id="themeAuto" checked>
+                        <div class="theme-card">
+                            <i class="fas fa-circle-half-stroke"></i>
+                            <span>Automático</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-title">Sobre o Aplicativo</h3>
+                
+                <div class="settings-info-item">
+                    <span>Versão</span>
+                    <span>1.0.0</span>
+                </div>
+                <div class="settings-info-item">
+                    <span>Desenvolvedor</span>
+                    <span>SportShop</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Sobre Page -->
+    <div class="page-overlay" id="sobreOverlay"></div>
+    <aside class="page-sidebar" id="sobrePage">
+        <div class="page-header">
+            <button class="page-back-btn" id="sobreBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Sobre</h2>
+        </div>
+        <div class="page-content">
+            <p>Conteúdo da página Sobre em desenvolvimento...</p>
+        </div>
+    </aside>
+
+    <!-- Login Page -->
+    <div class="page-overlay" id="loginOverlay"></div>
+    <aside class="page-sidebar" id="loginPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="loginBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Login</h2>
+        </div>
+        <div class="page-content">
+            <div class="auth-container">
+                <div class="auth-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h3 class="auth-title">Bem-vindo de volta!</h3>
+                <p class="auth-subtitle">Entre com sua conta para continuar</p>
+                
+                <form class="auth-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">E-mail</label>
+                        <input type="email" id="loginEmail" name="email" placeholder="seu@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginSenha">Senha</label>
+                        <input type="password" id="loginSenha" name="senha" placeholder="Digite sua senha" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-auth">Entrar</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Não tem uma conta? <a href="#" id="goToCadastroBtn">Cadastre-se</a></p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Cadastro Page -->
+    <div class="page-overlay" id="cadastroOverlay"></div>
+    <aside class="page-sidebar" id="cadastroPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="cadastroBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Cadastro</h2>
+        </div>
+        <div class="page-content">
+            <div class="auth-container cadastro-container">
+                <h3 class="auth-title">Criar Conta</h3>
+                <p class="auth-subtitle">Preencha todos os seus dados</p>
+                
+                <!-- Profile Photo Section -->
+                <div class="cadastro-photo-section">
+                    <div class="cadastro-photo-container">
+                        <i class="fas fa-user" id="cadastroPhotoIcon"></i>
+                        <img id="cadastroPhotoImg" style="display: none;">
+                        <input type="file" id="cadastroPhotoInput" accept="image/*" style="display: none;">
+                    </div>
+                    <button type="button" class="btn-change-photo" id="cadastroChangePhotoBtn">
+                        <i class="fas fa-camera"></i> Escolher Foto
+                    </button>
+                    <button type="button" class="btn-remove-photo" id="cadastroRemovePhotoBtn" style="display: none;">
+                        <i class="fas fa-trash"></i> Remover Foto
+                    </button>
+                </div>
+                
+                <form class="auth-form cadastro-form" id="cadastroForm">
+                    <h4 class="form-section-title">Dados Pessoais</h4>
+                    
+                    <div class="form-group">
+                        <label for="cadastroNome">Nome Completo *</label>
+                        <input type="text" id="cadastroNome" name="nome" placeholder="Digite seu nome completo" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroEmail">E-mail *</label>
+                        <input type="email" id="cadastroEmail" name="email" placeholder="seu@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroCelular">Celular *</label>
+                        <input type="tel" id="cadastroCelular" name="celular" placeholder="(00) 00000-0000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroCpf">CPF *</label>
+                        <input type="text" id="cadastroCpf" name="cpf" placeholder="000.000.000-00" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cadastroDataNascimento">Data de Nascimento *</label>
+                            <input type="date" id="cadastroDataNascimento" name="dataNascimento" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cadastroGenero">Gênero *</label>
+                            <select id="cadastroGenero" name="genero" required>
+                                <option value="">Selecione</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                                <option value="outro">Outro</option>
+                                <option value="nao-informar">Prefiro não informar</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h4 class="form-section-title">Endereço</h4>
+                    
+                    <div class="form-group">
+                        <label for="cadastroCep">CEP *</label>
+                        <input type="text" id="cadastroCep" name="cep" placeholder="00000-000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroEndereco">Endereço *</label>
+                        <input type="text" id="cadastroEndereco" name="endereco" placeholder="Rua, Avenida, etc." required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 0 0 35%;">
+                            <label for="cadastroNumero">Número *</label>
+                            <input type="text" id="cadastroNumero" name="numero" placeholder="Nº" required>
+                        </div>
+                        
+                        <div class="form-group" style="flex: 1;">
+                            <label for="cadastroComplemento">Complemento</label>
+                            <input type="text" id="cadastroComplemento" name="complemento" placeholder="Apto, Bloco, etc.">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroBairro">Bairro *</label>
+                        <input type="text" id="cadastroBairro" name="bairro" placeholder="Seu bairro" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="cadastroCidade">Cidade *</label>
+                            <input type="text" id="cadastroCidade" name="cidade" placeholder="Sua cidade" required>
+                        </div>
+                        
+                        <div class="form-group" style="flex: 0 0 35%;">
+                            <label for="cadastroEstado">Estado *</label>
+                            <select id="cadastroEstado" name="estado" required>
+                                <option value="">UF</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h4 class="form-section-title">Senha de Acesso</h4>
+                    
+                    <div class="form-group">
+                        <label for="cadastroSenha">Senha *</label>
+                        <input type="password" id="cadastroSenha" name="senha" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroConfirmaSenha">Confirmar Senha *</label>
+                        <input type="password" id="cadastroConfirmaSenha" name="confirmaSenha" placeholder="Digite a senha novamente" required minlength="6">
+                    </div>
+                    
+                    <button type="submit" class="btn-auth">Criar Conta</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Já tem uma conta? <a href="#" id="goToLoginBtn">Faça login</a></p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+
+    <!-- Installment Selector Modal -->
+    <div class="modal-overlay" id="installmentSelectorModal">
+        <div class="modal-content installment-selector-content">
+            <div class="modal-body">
+                <div class="installment-options" id="installmentOptions">
+                    <!-- Opções serão preenchidas dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sort Modal -->
+    <div class="modal-overlay" id="sortModal">
+        <div class="modal-content sort-modal-content">
+            <div class="modal-body">
+                <div class="sort-options" id="sortOptions">
+                    <div class="sort-option" data-sort="name-asc">
+                        <i class="fas fa-arrow-down-a-z"></i>
+                        <span>Nome: A → Z</span>
+                    </div>
+                    <div class="sort-option" data-sort="name-desc">
+                        <i class="fas fa-arrow-down-z-a"></i>
+                        <span>Nome: Z → A</span>
+                    </div>
+                    <div class="sort-option" data-sort="price-asc">
+                        <i class="fas fa-arrow-up-1-9"></i>
+                        <span>Menor preço</span>
+                    </div>
+                    <div class="sort-option" data-sort="price-desc">
+                        <i class="fas fa-arrow-down-9-1"></i>
+                        <span>Maior preço</span>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 SportShop. Todos os direitos reservados.</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer" role="alert" aria-live="polite"></div>
+
+    <!-- Empty Cart Confirmation Modal -->
+    <div class="modal-overlay" id="emptyCartModal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle warning-icon"></i>
+                <h2>ESVAZIAR CARRINHO</h2>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja remover todos os produtos do carrinho?</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn-secondary" id="cancelEmptyBtn">CANCELAR</button>
+                <button class="modal-btn-danger" id="confirmEmptyBtn">ESVAZIAR</button>
             </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h2>PEDIDO CONFIRMADO!</h2>
+            </div>
+            <div class="modal-body">
+                <p>Obrigado pela sua compra!</p>
+                <p>Você receberá um e-mail de confirmação em breve.</p>
+                <div class="order-summary" id="orderSummary"></div>
+            </div>
+            <button class="modal-btn" id="modalOkBtn">CONTINUAR COMPRANDO</button>
+            <button class="sidebar-close-btn" id="modalClose" style="margin-top: 10px;">FECHAR</button>
+        </div>
+    </div>
 
     <script src="products.js"></script>
     <script src="script.js"></script>

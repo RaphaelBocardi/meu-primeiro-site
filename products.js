@@ -1,200 +1,278 @@
 // Product Database
 const products = [
-    // Camisas
+    // Camisas de Times - Champions League
     {
         id: 1,
-        name: "Camisa Nike Dry-FIT",
+        name: "Camisa Real Madrid Home 24/25",
         category: "camisas",
-        price: 149.90,
-        description: "Camisa esportiva de alta performance com tecnologia Dry-FIT",
+        price: 349.90,
+        description: "Camisa oficial do Real Madrid - Temporada 24/25 - Champions League - Adidas",
+        image: "https://static.netshoes.com.br/produtos/camisa-real-madrid-home-adidas-2425-sn-jogador-masculina/14/FB9-8514-014/FB9-8514-014_zoom1.jpg?ts=1760452872&ims=1088x",
         icon: "👕"
     },
     {
         id: 2,
-        name: "Camisa Adidas Originals",
+        name: "Camisa Manchester City Home 24/25",
         category: "camisas",
-        price: 179.90,
-        description: "Camisa casual estilo vintage com as 3 listras clássicas",
+        price: 349.90,
+        description: "Camisa oficial do Manchester City - Temporada 24/25 - Puma",
+        image: "https://tse1.mm.bing.net/th/id/OIP.WGMnhYkH5SglPzInBKdzYQHaHa?cb=12&w=700&h=700&rs=1&pid=ImgDetMain&o=7&rm=3",
         icon: "👕"
     },
     {
         id: 3,
-        name: "Camisa Puma Training",
+        name: "Camisa Bayern München Home 24/25",
         category: "camisas",
-        price: 129.90,
-        description: "Ideal para treinos intensos, tecido respirável",
+        price: 349.90,
+        description: "Camisa oficial do Bayern de Munique - Temporada 24/25 - Adidas",
+        image: "https://static.netshoes.com.br/produtos/camisa-bayern-de-munique-adidas-home-2425-sn-torcedor-masculina/16/FB9-8501-016/FB9-8501-016_zoom1.jpg?ts=1760844397&ims=1088x",
         icon: "👕"
     },
     {
         id: 4,
-        name: "Camisa Under Armour Tech",
+        name: "Camisa PSG Home 24/25",
         category: "camisas",
-        price: 159.90,
-        description: "Tecnologia anti-odor e secagem rápida",
+        price: 349.90,
+        description: "Camisa oficial do Paris Saint-Germain - Temporada 24/25 - Nike",
+        image: "https://bryanstore.com.br/cdn/shop/files/psg-nike-home-stadium-shirt-2024-25_ss5_p-200827669_pv-2_u-zsehjrrtq4aszhqrqd0f_v-gfgancmusfnavrx7ghgz.jpg?v=1756841685&width=1800",
         icon: "👕"
     },
     {
         id: 5,
-        name: "Camisa Oakley Performance",
+        name: "Camisa Liverpool Home 24/25",
         category: "camisas",
-        price: 199.90,
-        description: "Design moderno com proteção UV",
+        price: 349.90,
+        description: "Camisa oficial do Liverpool FC - Temporada 24/25 - Nike",
+        image: "https://dcdn-us.mitiendanube.com/stores/005/457/244/products/camisa-liverpool-nike-2024-jogador-af48f57e214c0b701f17341202499147-1024-1024.png",
         icon: "👕"
     },
     {
         id: 6,
-        name: "Camisa Fila Classic",
+        name: "Camisa Barcelona Home 24/25",
         category: "camisas",
-        price: 119.90,
-        description: "Estilo clássico para o dia a dia",
+        price: 349.90,
+        description: "Camisa oficial do FC Barcelona - Temporada 24/25 - Nike",
+        image: "https://cdn.grupoelcorteingles.es/SGFM/dctm/MEDIA03/202407/19/00199455130213____1__1200x1200.jpg",
         icon: "👕"
     },
-    
-    // Tênis
     {
         id: 7,
-        name: "Nike Air Max 2024",
-        category: "tenis",
-        price: 699.90,
-        description: "Máximo conforto e amortecimento Air Max",
-        icon: "👟"
+        name: "Camisa Juventus Home 24/25",
+        category: "camisas",
+        price: 349.90,
+        description: "Camisa oficial da Juventus - Temporada 24/25 - Adidas",
+        image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgUe8zH5EdCkoMQexVM7Q-lx5fVepA8Bqn18Wwsd9HbPskqmbaW2ZncR6Nhyphenhyphen-or1GO6s8xG5lmm73iZlhoXyi_XDfznqSquzBN5Sxo6rNkbimbBIYbbQNmbh_77LYoHdxcieSqzYWrqP75aFqbpYKP68bpTU-YbUs0IKF7cq0AQyEHNRvCoPNzeOBxuPy_p/s1000/juventus-24-25-home-kit%20(1).jpg",
+        icon: "👕"
     },
     {
         id: 8,
-        name: "Adidas Ultraboost 23",
-        category: "tenis",
-        price: 899.90,
-        description: "Energia infinita com tecnologia Boost",
-        icon: "👟"
+        name: "Camisa Inter de Milão Home 24/25",
+        category: "camisas",
+        price: 349.90,
+        description: "Camisa oficial da Inter de Milão - Temporada 24/25 - Nike",
+        image: "https://www.eurosportsoccer.com/cdn/shop/files/nike-inter-home-jersey-2024-25_2_1200x1200.png?v=1732998167",
+        icon: "👕"
     },
     {
         id: 9,
-        name: "Nike Revolution 7",
-        category: "tenis",
+        name: "Camisa Chelsea Home 24/25",
+        category: "camisas",
         price: 349.90,
-        description: "Tênis versátil para corrida e caminhada",
-        icon: "👟"
+        description: "Camisa oficial do Chelsea FC - Temporada 24/25 - Nike",
+        image: "https://tamam-mauritius.com/cdn/shop/files/chelsea-nike-home-stadium-shirt-2024-25_ss5_p-200851164_pv-2_u-canixtzkdetrqr6ldmyh_v-urvlapfisvffp6cea3w2.jpg?v=1721728017&width=1445",
+        icon: "👕"
     },
     {
         id: 10,
-        name: "Adidas Falcon",
-        category: "tenis",
-        price: 549.90,
-        description: "Design retrô com conforto moderno",
-        icon: "👟"
+        name: "Camisa Borussia Dortmund Home 24/25",
+        category: "camisas",
+        price: 349.90,
+        description: "Camisa oficial do Borussia Dortmund - Temporada 24/25 - Puma",
+        image: "https://www.footcenter.fr/media/catalog/product/cache/82d5e29288185f6fc64d760e116074a6/m/a/maillot-dortmund-domicile-2023-2024-junior-taill-0.jpg",
+        icon: "👕"
     },
+    
+    // Tênis Esportivos
     {
         id: 11,
-        name: "Puma RS-X",
+        name: "Nike Air Max 270 React",
         category: "tenis",
-        price: 599.90,
-        description: "Estilo chunky com tecnologia Running System",
+        price: 799.90,
+        description: "Tênis Nike com Air Max 270 - Máximo conforto e estilo urbano",
+        image: "",
         icon: "👟"
     },
     {
         id: 12,
-        name: "New Balance 574",
+        name: "Adidas Ultraboost 22",
         category: "tenis",
-        price: 479.90,
-        description: "Ícone do estilo casual urbano",
+        price: 999.90,
+        description: "Adidas Ultraboost - Tecnologia Boost para corrida de alta performance",
+        image: "",
         icon: "👟"
     },
     {
         id: 13,
-        name: "Asics Gel Kayano",
+        name: "Nike React Infinity Run",
         category: "tenis",
-        price: 799.90,
-        description: "Estabilidade e conforto para longas distâncias",
+        price: 699.90,
+        description: "Nike React - Estabilidade e amortecimento para longas corridas",
+        image: "",
         icon: "👟"
     },
     {
         id: 14,
-        name: "Mizuno Wave Prophecy",
+        name: "Adidas NMD R1 V2",
         category: "tenis",
-        price: 999.90,
-        description: "Tecnologia Wave para máxima performance",
+        price: 649.90,
+        description: "Adidas NMD - Design futurista com tecnologia Boost",
+        image: "",
         icon: "👟"
     },
-    
-    // Chuteiras
     {
         id: 15,
-        name: "Nike Mercurial Vapor",
-        category: "chuteiras",
-        price: 899.90,
-        description: "Velocidade e precisão em campo",
-        icon: "⚽"
+        name: "Nike ZoomX Vaporfly NEXT%",
+        category: "tenis",
+        price: 1499.90,
+        description: "Nike ZoomX - Tênis de corrida profissional para quebrar recordes",
+        image: "",
+        icon: "👟"
     },
     {
         id: 16,
-        name: "Adidas Predator Elite",
-        category: "chuteiras",
-        price: 1199.90,
-        description: "Controle total da bola com tecnologia Predator",
-        icon: "⚽"
+        name: "Adidas Yeezy Boost 350 V2",
+        category: "tenis",
+        price: 1299.90,
+        description: "Adidas Yeezy - Estilo premium e exclusivo com Boost",
+        image: "",
+        icon: "👟"
     },
     {
         id: 17,
-        name: "Nike Phantom GT2",
-        category: "chuteiras",
-        price: 799.90,
-        description: "Precisão nos passes e chutes",
-        icon: "⚽"
+        name: "Nike Air Jordan 1 Mid",
+        category: "tenis",
+        price: 899.90,
+        description: "Nike Air Jordan 1 - Ícone do basquete com estilo atemporal",
+        image: "",
+        icon: "👟"
     },
     {
         id: 18,
-        name: "Adidas Copa Sense",
-        category: "chuteiras",
-        price: 699.90,
-        description: "Toque clássico com tecnologia moderna",
-        icon: "⚽"
+        name: "Adidas Superstar Classic",
+        category: "tenis",
+        price: 499.90,
+        description: "Adidas Superstar - Clássico urbano com as 3 listras",
+        image: "",
+        icon: "👟"
     },
     {
         id: 19,
-        name: "Puma Future Z",
-        category: "chuteiras",
-        price: 849.90,
-        description: "Agilidade e mudança rápida de direção",
-        icon: "⚽"
+        name: "Nike Pegasus 40",
+        category: "tenis",
+        price: 749.90,
+        description: "Nike Pegasus - Versatilidade para treinos diários",
+        image: "",
+        icon: "👟"
     },
     {
         id: 20,
-        name: "Nike Tiempo Legend",
-        category: "chuteiras",
-        price: 949.90,
-        description: "Couro premium para máximo conforto",
-        icon: "⚽"
+        name: "Adidas Samba OG",
+        category: "tenis",
+        price: 599.90,
+        description: "Adidas Samba - Clássico do futebol adaptado para as ruas",
+        image: "",
+        icon: "👟"
     },
+    
+    // Chuteiras Profissionais
     {
         id: 21,
-        name: "Adidas X Speedflow",
+        name: "Nike Mercurial Superfly 9 Elite",
         category: "chuteiras",
-        price: 1099.90,
-        description: "Ultra-leve para velocidade máxima",
+        price: 1499.90,
+        description: "Nike Mercurial Elite - Chuteira de velocidade usada por CR7",
+        image: "",
         icon: "⚽"
     },
     {
         id: 22,
-        name: "Umbro Velocita Pro",
+        name: "Adidas Predator Accuracy.1 FG",
         category: "chuteiras",
-        price: 599.90,
-        description: "Ótimo custo-benefício para jogadores sérios",
+        price: 1399.90,
+        description: "Adidas Predator - Controle total e precisão nos chutes",
+        image: "",
         icon: "⚽"
     },
     {
         id: 23,
-        name: "Mizuno Morelia Neo",
+        name: "Nike Phantom GX Elite FG",
         category: "chuteiras",
-        price: 749.90,
-        description: "Tradição japonesa em chuteiras de qualidade",
+        price: 1299.90,
+        description: "Nike Phantom - Precisão e controle em passes e finalizações",
+        image: "",
         icon: "⚽"
     },
     {
         id: 24,
-        name: "Penalty S11 Pro",
+        name: "Adidas Copa Mundial FG",
         category: "chuteiras",
-        price: 449.90,
-        description: "Chuteira nacional de alta performance",
+        price: 899.90,
+        description: "Adidas Copa Mundial - Clássico atemporal em couro canguru",
+        image: "",
+        icon: "⚽"
+    },
+    {
+        id: 25,
+        name: "Nike Tiempo Legend 10 Elite",
+        category: "chuteiras",
+        price: 1199.90,
+        description: "Nike Tiempo - Couro premium para toque de bola perfeito",
+        image: "",
+        icon: "⚽"
+    },
+    {
+        id: 26,
+        name: "Adidas X Crazyfast Elite FG",
+        category: "chuteiras",
+        price: 1599.90,
+        description: "Adidas X - Ultra-leve e veloz para explosão máxima",
+        image: "",
+        icon: "⚽"
+    },
+    {
+        id: 27,
+        name: "Nike Mercurial Vapor 15 Elite",
+        category: "chuteiras",
+        price: 1399.90,
+        description: "Nike Vapor - Design aerodinâmico para máxima velocidade",
+        image: "",
+        icon: "⚽"
+    },
+    {
+        id: 28,
+        name: "Adidas Predator Edge+ FG",
+        category: "chuteiras",
+        price: 1199.90,
+        description: "Adidas Predator Edge - Controle e efeito nos chutes",
+        image: "",
+        icon: "⚽"
+    },
+    {
+        id: 29,
+        name: "Nike Phantom GT2 Elite FG",
+        category: "chuteiras",
+        price: 1099.90,
+        description: "Nike Phantom GT2 - Ajuste personalizado e controle total",
+        image: "",
+        icon: "⚽"
+    },
+    {
+        id: 30,
+        name: "Adidas Copa Sense+ FG",
+        category: "chuteiras",
+        price: 1299.90,
+        description: "Adidas Copa Sense - Sensibilidade e conforto premium",
+        image: "",
         icon: "⚽"
     }
 ];
