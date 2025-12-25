@@ -11,6 +11,47 @@ const products = [
         icon: "👕"
     },
     {
+        id: 31,
+        name: "Jaqueta Esportiva Outdoor Premium",
+        category: "jaquetas",
+        price: 399.90,
+        description: "Jaqueta impermeável com capuz - Ideal para aventuras e esportes outdoor",
+        image: "images/jaquetas/9311562994_1506982484.jpg",
+        icon: "🧥",
+        variants: [
+            {
+                color: "Preto/Cinza",
+                colorCode: "#2c2c2c",
+                image: "images/jaquetas/9311562994_1506982484.jpg"
+            },
+            {
+                color: "Roxo",
+                colorCode: "#6b2d91",
+                image: "images/jaquetas/9336199651_1506982484.jpg"
+            },
+            {
+                color: "Laranja/Cinza",
+                colorCode: "#ff6b35",
+                image: "images/jaquetas/9336205427_1506982484.jpg"
+            },
+            {
+                color: "Azul Claro",
+                colorCode: "#5dade2",
+                image: "images/jaquetas/9336217190_1506982484.jpg"
+            },
+            {
+                color: "Rosa/Roxo",
+                colorCode: "#e91e63",
+                image: "images/jaquetas/9355343757_1506982484.jpg"
+            },
+            {
+                color: "Azul Royal",
+                colorCode: "#1e3a8a",
+                image: "images/jaquetas/9355370005_1506982484.jpg"
+            }
+        ]
+    },
+    {
         id: 2,
         name: "Camisa Manchester City Home 24/25",
         category: "camisas",

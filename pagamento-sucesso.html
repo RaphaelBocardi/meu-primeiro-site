@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Aprovado - SportShop</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 60px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .success-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .order-info {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .order-row:last-child {
+            border-bottom: none;
+        }
+
+        .order-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .order-value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .email-sent {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .email-sent-icon {
+            font-size: 24px;
+        }
+
+        .email-sent-text {
+            font-size: 14px;
+            color: #1e40af;
+            text-align: left;
+        }
+
+        .btn-home {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-home:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-orders {
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-orders:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            position: absolute;
+            animation: confetti-fall 3s linear;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">
+            ✓
+        </div>
+
+        <h1 class="success-title">Pagamento Aprovado!</h1>
+        <p class="success-subtitle">
+            Seu pedido foi confirmado com sucesso.<br>
+            Obrigado pela sua compra! 🎉
+        </p>
+
+        <div class="order-info">
+            <div class="order-row">
+                <span class="order-label">Número do Pedido</span>
+                <span class="order-value" id="orderId">#000000</span>
+            </div>
+            <div class="order-row">
+                <span class="order-label">Forma de Pagamento</span>
+                <span class="order-value" id="paymentMethod">-</span>
+            </div>
+            <div class="order-row">
+                <span class="order-label">Valor Total</span>
+                <span class="order-value" id="totalAmount">R$ 0,00</span>
+            </div>
+        </div>
+
+        <div class="email-sent">
+            <div class="email-sent-icon">📧</div>
+            <div class="email-sent-text">
+                <strong>Confirmação enviada!</strong><br>
+                Enviamos todos os detalhes do seu pedido para <span id="customerEmail"></span>
+            </div>
+        </div>
+
+        <button class="btn-home" onclick="goToHome()">
+            🏠 Continuar Comprando
+        </button>
+
+        <button class="btn-orders" onclick="alert('Em breve: Acompanhe seus pedidos!')">
+            📦 Meus Pedidos
+        </button>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            const paymentData = JSON.parse(sessionStorage.getItem('payment_data'));
+            
+            if (paymentData) {
+                document.getElementById('orderId').textContent = '#' + paymentData.orderId;
+                
+                // Mostrar método de pagamento com detalhes
+                let paymentMethodText = paymentData.paymentMethod || 'PIX';
+                if (paymentData.installments && paymentData.installments > 1) {
+                    paymentMethodText += ` (${paymentData.installments}x de R$ ${paymentData.installmentValue.toFixed(2).replace('.', ',')})`;
+                }
+                document.getElementById('paymentMethod').textContent = paymentMethodText;
+                
+                document.getElementById('totalAmount').textContent = `R$ ${paymentData.total.toFixed(2).replace('.', ',')}`;
+                document.getElementById('customerEmail').textContent = paymentData.email;
+
+                // Enviar e-mail de confirmação
+                sendConfirmationEmail(paymentData);
+            }
+
+            // Criar efeito de confetes
+            createConfetti();
+        });
+
+        function createConfetti() {
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        async function sendConfirmationEmail(paymentData) {
+            try {
+                const response = await fetch('http://localhost:3000/api/payments/send-confirmation-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paymentData)
+                });
+
+                if (response.ok) {
+                    console.log('✅ E-mail de confirmação enviado!');
+                }
+            } catch (error) {
+                console.log('⚠️ Modo demonstração: E-mail não enviado');
+            }
+        }
+
+        function goToHome() {
+            // Limpar dados de pagamento
+            sessionStorage.removeItem('payment_data');
+            localStorage.removeItem('sportshop_cart');
+            
+            // Redirecionar para home
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

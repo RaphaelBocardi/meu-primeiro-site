@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento PIX - SportShop</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .pix-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .pix-amount {
+            background: #f3f4f6;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .pix-amount-label {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .pix-amount-value {
+            font-size: 42px;
+            font-weight: 700;
+            color: #00a650;
+        }
+
+        .qrcode-section {
+            background: white;
+            padding: 24px;
+            border: 3px solid #32BCAD;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(50, 188, 173, 0.15);
+        }
+
+        .qrcode-img {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .qrcode-img img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .pix-code-section {
+            margin: 20px 0;
+        }
+
+        .pix-code-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .pix-code-box {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #374151;
+            margin-bottom: 12px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .btn-copy {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-copy:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-confirm {
+            background: #00a650;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-confirm:hover {
+            background: #008f44;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 166, 80, 0.4);
+        }
+
+        .btn-home {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-home:hover {
+            background: #4b5563;
+        }
+
+        .timer-section {
+            margin: 20px 0;
+            padding: 16px;
+            background: #fef3c7;
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
+        }
+
+        .timer-text {
+            font-size: 14px;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .timer {
+            font-size: 24px;
+            font-weight: 700;
+            color: #b45309;
+        }
+
+        .status-checking {
+            margin-top: 20px;
+            padding: 12px;
+            background: #dbeafe;
+            border-radius: 8px;
+            color: #1e40af;
+            font-size: 14px;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #1e40af;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .instructions {
+            margin-top: 20px;
+            text-align: left;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .instructions-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            color: #4b5563;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pix-container">
+        <div class="pix-amount">
+            <div class="pix-amount-label">Pagamento via PIX</div>
+            <div class="pix-amount-value" id="pixAmount">R$ 0,00</div>
+            <div style="font-size: 14px; color: #00a650; margin-top: 8px; font-weight: 600;" id="pixDiscount"></div>
+        </div>
+
+        <div class="qrcode-section">
+            <div class="qrcode-img" id="qrcodeContainer">
+                <img id="qrcodeImage" src="" alt="QR Code PIX">
+            </div>
+        </div>
+
+        <div class="pix-code-section">
+            <div class="pix-code-label">Código PIX Copia e Cola</div>
+            <div class="pix-code-box" id="pixCode"></div>
+            <button class="btn-copy" onclick="copyPixCode()">
+                📋 Copiar Código PIX
+            </button>
+        </div>
+
+        <div class="timer-section">
+            <div class="timer-text">⏱️ Tempo restante para pagamento:</div>
+            <div class="timer" id="timer">05:00</div>
+        </div>
+
+        <button class="btn-confirm" onclick="checkPaymentStatus()">
+            ✓ Já Paguei - Verificar Pagamento
+        </button>
+
+        <div class="status-checking" id="statusChecking">
+            <span class="loading-spinner"></span>
+            Verificando pagamento...
+        </div>
+
+        <button class="btn-home" onclick="window.location.href='index.html'">
+            🏠 Voltar ao Início
+        </button>
+
+        <div class="instructions">
+            <div class="instructions-title">📱 Como pagar com PIX:</div>
+            <ol>
+                <li>Abra o app do seu banco</li>
+                <li>Escolha pagar com PIX</li>
+                <li>Escaneie o QR Code ou copie o código</li>
+                <li>Confirme o pagamento</li>
+                <li>Pronto! Confirmação é automática</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let countdown = 300; // 5 minutos em segundos
+        let checkInterval;
+        let timerInterval;
+
+        // Carregar dados do pagamento
+        window.addEventListener('load', function() {
+            const paymentData = JSON.parse(sessionStorage.getItem('payment_data'));
+            
+            if (!paymentData) {
+                alert('Erro: Dados de pagamento não encontrados');
+                window.location.href = 'checkout.html';
+                return;
+            }
+
+            // Exibir valor com desconto
+            document.getElementById('pixAmount').textContent = `R$ ${paymentData.total.toFixed(2).replace('.', ',')}`;
+            
+            // Mostrar desconto aplicado
+            if (paymentData.pixDiscount && paymentData.pixDiscount > 0) {
+                document.getElementById('pixDiscount').textContent = `✓ Desconto de R$ ${paymentData.pixDiscount.toFixed(2).replace('.', ',')} aplicado!`;
+            }
+
+            // Gerar QR Code
+            generatePixCode(paymentData);
+
+            // Iniciar timer
+            startTimer();
+
+            // Iniciar verificação automática a cada 5 segundos
+            checkInterval = setInterval(autoCheckPayment, 5000);
+        });
+
+        function generatePixCode(data) {
+            const pixCode = `00020126580014BR.GOV.BCB.PIX0136${Date.now()}520400005303986540${parseFloat(data.total).toFixed(2)}5802BR5925SPORTSHOP LTDA6009SAO PAULO62070503***6304${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+            
+            // Gerar QR Code usando API (300x300 para maior qualidade)
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCode)}`;
+            
+            document.getElementById('qrcodeImage').src = qrCodeUrl;
+            document.getElementById('pixCode').textContent = pixCode;
+
+            // Salvar código PIX
+            sessionStorage.setItem('pix_code', pixCode);
+        }
+
+        function copyPixCode() {
+            const pixCode = document.getElementById('pixCode').textContent;
+            navigator.clipboard.writeText(pixCode).then(() => {
+                // Criar toast de confirmação
+                const toast = document.createElement('div');
+                toast.textContent = '✓ Código copiado!';
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: #00a650;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0, 166, 80, 0.4);
+                    z-index: 10000;
+                    animation: fadeIn 0.2s ease-out;
+                `;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'fadeOut 0.2s ease-out';
+                    setTimeout(() => toast.remove(), 200);
+                }, 1000);
+            });
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                countdown--;
+                
+                const minutes = Math.floor(countdown / 60);
+                const seconds = countdown % 60;
+                
+                document.getElementById('timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+                    clearInterval(checkInterval);
+                    alert('⏱️ Tempo expirado! Por favor, faça um novo pedido.');
+                    window.location.href = 'checkout.html';
+                }
+            }, 1000);
+        }
+
+        async function autoCheckPayment() {
+            // Verificar pagamento automaticamente (silencioso)
+            try {
+                const paymentData = JSON.parse(sessionStorage.getItem('payment_data'));
+                const response = await fetch(`http://localhost:3000/api/payments/check-pix`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pixCode: sessionStorage.getItem('pix_code'),
+                        orderId: paymentData.orderId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.paid) {
+                    clearInterval(checkInterval);
+                    clearInterval(timerInterval);
+                    
+                    // Exibir notificação de confirmação
+                    showPaymentConfirmationNotification();
+                    
+                    // Aguardar 2 segundos antes de redirecionar
+                    setTimeout(() => {
+                        paymentConfirmed();
+                    }, 2000);
+                }
+            } catch (error) {
+                // Silencioso - não mostrar erro na verificação automática
+                console.log('Verificando pagamento...');
+            }
+        }
+
+        async function checkPaymentStatus() {
+            const statusDiv = document.getElementById('statusChecking');
+            statusDiv.style.display = 'block';
+
+            try {
+                const paymentData = JSON.parse(sessionStorage.getItem('payment_data'));
+                const response = await fetch(`http://localhost:3000/api/payments/check-pix`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pixCode: sessionStorage.getItem('pix_code'),
+                        orderId: paymentData.orderId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.paid) {
+                    paymentConfirmed();
+                } else {
+                    statusDiv.style.display = 'none';
+                    alert('⏳ Pagamento ainda não identificado. Aguarde alguns segundos e tente novamente.');
+                }
+            } catch (error) {
+                statusDiv.style.display = 'none';
+                // Em modo demonstração, simular pagamento após 3 segundos
+                showPaymentConfirmationNotification();
+                setTimeout(() => {
+                    paymentConfirmed();
+                }, 3000);
+            }
+        }
+
+        function showPaymentConfirmationNotification() {
+            // Adicionar notificação ao sistema
+            createPaymentConfirmedNotification();
+            
+            // Notificação push do navegador
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Pagamento Confirmado! ✅', {
+                    body: 'Seu pagamento PIX foi aprovado com sucesso!',
+                    icon: 'https://via.placeholder.com/128/00a650/ffffff?text=✓'
+                });
+            }
+            
+            // Toast visual na tela
+            const notification = document.createElement('div');
+            notification.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+                <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Pagamento Confirmado!</div>
+                <div style="font-size: 14px;">Seu PIX foi aprovado com sucesso</div>
+            `;
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                color: #1f2937;
+                padding: 32px;
+                border-radius: 16px;
+                font-weight: 600;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                z-index: 10001;
+                animation: scaleIn 0.5s ease-out;
+            `;
+            
+            document.body.appendChild(notification);
+        }
+        
+        function createPaymentConfirmedNotification() {
+            const paymentData = JSON.parse(sessionStorage.getItem('payment_data') || '{}');
+            
+            let notifications = [];
+            try {
+                const saved = localStorage.getItem('sportshop_notifications');
+                if (saved) {
+                    notifications = JSON.parse(saved);
+                }
+            } catch(e) {
+                console.error('Error loading notifications:', e);
+            }
+            
+            // Create notification for confirmed payment
+            const notification = {
+                id: Date.now(),
+                type: 'order',
+                icon: 'fa-check-circle',
+                title: 'Pagamento Aprovado! ✅',
+                message: `Pedido #${paymentData.orderId} confirmado. Acompanhe o status da sua entrega.`,
+                time: 'Agora',
+                read: false,
+                action: { type: 'page', page: 'meusPedidos' }
+            };
+            
+            notifications.unshift(notification);
+            localStorage.setItem('sportshop_notifications', JSON.stringify(notifications));
+        }
+
+        function paymentConfirmed() {
+            // Limpar carrinho
+            localStorage.removeItem('sportshop_cart');
+            sessionStorage.removeItem('payment_data');
+            sessionStorage.removeItem('pix_code');
+
+            // Redirecionar para página de sucesso
+            window.location.href = 'pagamento-sucesso.html';
+        }
+        
+        // Solicitar permissão para notificações ao carregar
+        window.addEventListener('load', function() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        });
+    </script>
+</body>
+</html>

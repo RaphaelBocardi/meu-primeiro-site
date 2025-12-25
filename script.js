@@ -207,8 +207,56 @@ let currentSort = 'name-asc'; // Default A-Z
 // Current category filter
 let currentFilter = 'all';
 
+// Função para obter taxa de juros (Mercado Pago - Recebimento na Hora)
+function getInterestRate(installments) {
+    // Tabela oficial de taxas do Mercado Pago (Recebimento na Hora)
+    const rates = {
+        1: 4.98,   // 1x à vista
+        2: 9.90,   // 2x
+        3: 11.28,  // 3x
+        4: 12.64,  // 4x
+        5: 13.97,  // 5x
+        6: 15.27,  // 6x
+        7: 16.55,  // 7x
+        8: 17.81,  // 8x
+        9: 19.04,  // 9x
+        10: 20.24, // 10x
+        11: 21.43, // 11x
+        12: 22.59  // 12x
+    };
+    return rates[installments] || 4.98;
+}
+
+// Função para calcular valor da parcela com juros
+function calculateInstallment(price, installments = 3, maxNoInterest = 3) {
+    if (installments <= maxNoInterest) {
+        // Sem juros
+        return {
+            value: price / installments,
+            total: price,
+            hasInterest: false
+        };
+    } else {
+        // Com juros do Mercado Pago (taxa total sobre o valor)
+        const taxRate = getInterestRate(installments) / 100;
+        const totalWithInterest = price * (1 + taxRate);
+        const installmentValue = totalWithInterest / installments;
+        return {
+            value: installmentValue,
+            total: totalWithInterest,
+            hasInterest: true
+        };
+    }
+}
+
+// Função para formatar texto de parcelas
+function getInstallmentText(price) {
+    const calc = calculateInstallment(price, 3); // Mostrar 3x sem juros por padrão
+    return `ou 3x de R$ ${calc.value.toFixed(2)} sem juros`;
+}
+
 // Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Scroll to top on page load
     window.scrollTo(0, 0);
     
@@ -224,6 +272,15 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.remove('active');
         }
     });
+    
+    // Buscar produtos da API
+    if (typeof fetchProductsFromAPI === 'function') {
+        const apiProducts = await fetchProductsFromAPI();
+        if (apiProducts && apiProducts.length > 0) {
+            // Substituir produtos locais por produtos da API
+            window.products = apiProducts;
+        }
+    }
     
     loadProducts();
     setupEventListeners();
@@ -281,23 +338,43 @@ function loadProducts(filter = 'all', resetPage = true) {
     // Render products
     productsGrid.innerHTML = displayProducts.map(product => {
         const isFavorited = favorites.includes(product.id);
+        
+        // Render variants if product has them
+        let variantsHTML = '';
+        if (product.variants && product.variants.length > 0) {
+            variantsHTML = `
+                <div class="product-variants">
+                    ${product.variants.map((variant, index) => `
+                        <div class="variant-option ${index === 0 ? 'active' : ''}" 
+                             onclick="changeProductVariant(${product.id}, ${index}, event)"
+                             style="background-image: url('${variant.image}')"
+                             title="${variant.color}">
+                            <img src="${variant.image}" alt="${variant.color}" loading="lazy">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
         return `
         <div class="product-card" data-product-id="${product.id}">
-            <div class="product-image">
-                <button type="button" class="favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="toggleFavorite(${product.id})" aria-label="Favoritar ${product.name}">
+            <div class="product-image" onclick="openProductDetail(${product.id})">
+                <button type="button" class="favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="event.stopPropagation(); toggleFavorite(${product.id})" aria-label="Favoritar ${product.name}">
                     <i class="${isFavorited ? 'fas' : 'far'} fa-heart"></i>
                 </button>
-                <img src="${product.image}" alt="${product.name}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="${product.image}" alt="${product.name}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" data-product-img="${product.id}">
                 <span style="display:none;">${product.icon}</span>
             </div>
-            <div class="product-info">
+            <div class="product-info" onclick="openProductDetail(${product.id})">
                 <div class="product-category">${product.category}</div>
                 <div class="product-name">${product.name}</div>
                 <div class="product-price">R$ ${product.price.toFixed(2)}</div>
-                <button type="button" class="product-btn" onclick="addToCart(${product.id})" aria-label="Adicionar ${product.name} ao carrinho">
+                <div class="product-installment">${getInstallmentText(product.price)}</div>
+                <button type="button" class="product-btn" onclick="event.stopPropagation(); addToCart(${product.id})" aria-label="Adicionar ${product.name} ao carrinho">
                     <i class="fas fa-shopping-cart"></i> ADICIONAR
                 </button>
             </div>
+            ${variantsHTML}
         </div>
     `}).join('');
 
@@ -310,7 +387,8 @@ function getCategoryName(category) {
     const names = {
         'camisas': 'Camisas',
         'tenis': 'Tênis',
-        'chuteiras': 'Chuteiras'
+        'chuteiras': 'Chuteiras',
+        'jaquetas': 'Jaquetas'
     };
     return names[category] || category;
 }
@@ -344,6 +422,35 @@ function loadMoreProducts() {
     const activeCategory = document.querySelector('nav a.active').getAttribute('data-category');
     loadProducts(activeCategory, false);
     showToast('Mais produtos carregados!', 'info');
+}
+
+// Change product variant (color)
+function changeProductVariant(productId, variantIndex, event) {
+    event.stopPropagation();
+    
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.variants) return;
+    
+    const variant = product.variants[variantIndex];
+    
+    // Update image in all places (grid, carousel, favorites)
+    const productCards = document.querySelectorAll(`[data-product-id="${productId}"]`);
+    productCards.forEach(card => {
+        const img = card.querySelector('img[data-product-img]');
+        if (img) {
+            img.src = variant.image;
+        }
+        
+        // Update active variant
+        const variantOptions = card.querySelectorAll('.variant-option');
+        variantOptions.forEach((option, index) => {
+            if (index === variantIndex) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
+    });
 }
 
 // Setup event listeners
@@ -861,54 +968,16 @@ function toggleCart() {
 
 // Checkout
 function checkout() {
-    if (cart.length === 0) return;
+    if (cart.length === 0) {
+        showToast('Seu carrinho está vazio!', 'info');
+        return;
+    }
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    // Show confirmation modal instead of alert
-    showCheckoutModal(itemCount, total);
-}
-
-// Show checkout confirmation modal
-function showCheckoutModal(itemCount, total) {
-    const modal = document.getElementById('checkoutModal');
-    const orderSummary = document.getElementById('orderSummary');
-    const modalOkBtn = document.getElementById('modalOkBtn');
-    const modalClose = document.getElementById('modalClose');
-    
-    if (orderSummary) {
-        orderSummary.innerHTML = `
-            <p><strong>Total de itens:</strong> ${itemCount}</p>
-            <p><strong>Valor total:</strong> R$ ${total.toFixed(2)}</p>
-        `;
-    }
-    
-    if (modal) {
-        modal.classList.add('active');
-    }
-    
-    // Setup close handlers
-    if (modalOkBtn) {
-        modalOkBtn.onclick = closeCheckoutModal;
-    }
-    if (modalClose) {
-        modalClose.onclick = closeCheckoutModal;
-    }
-}
-
-// Close checkout modal
-function closeCheckoutModal() {
-    const modal = document.getElementById('checkoutModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-    
-    cart = [];
-    updateCart();
+    // Salvar carrinho no localStorage antes de redirecionar
     saveCartToStorage();
-    toggleCart();
-    showToast('Pedido finalizado com sucesso!', 'success');
+    
+    // Redirecionar para página de checkout
+    window.location.href = 'checkout.html';
 }
 
 // Save cart to localStorage
@@ -927,6 +996,15 @@ function loadCartFromStorage() {
 
 // Show toast notification
 function showToast(message, type = 'info') {
+    // Create or get toast container
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; align-items: center; pointer-events: none;';
+        document.body.appendChild(container);
+    }
+    
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
@@ -942,14 +1020,50 @@ function showToast(message, type = 'info') {
         <span>${message}</span>
     `;
     
-    document.body.appendChild(toast);
+    // Inline styles to ensure it appears at the top
+    toast.style.cssText = `
+        position: relative;
+        background: white;
+        color: #333;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        border-left: 3px solid;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 280px;
+        max-width: 90vw;
+        margin-bottom: 8px;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s ease;
+        pointer-events: auto;
+    `;
     
-    setTimeout(() => toast.classList.add('show'), 10);
+    // Set border color based on type
+    const borderColors = {
+        success: '#28a745',
+        error: '#dc3545',
+        info: '#000000',
+        warning: '#D4AF37'
+    };
+    toast.style.borderLeftColor = borderColors[type] || borderColors.info;
     
+    container.appendChild(toast);
+    
+    // Trigger animation
     setTimeout(() => {
-        toast.classList.remove('show');
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Remove after 2 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 2000);
 }
 
 // Contact form handler (newsletter)
@@ -1017,12 +1131,13 @@ function addAnimationStyles() {
         
         .toast {
             position: fixed;
-            bottom: -100px;
-            right: 20px;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
             background: white;
             color: var(--secondary-color);
             padding: 1rem 1.5rem;
-            border-radius: 0;
+            border-radius: 8px;
             border-left: 3px solid;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
@@ -1030,11 +1145,12 @@ function addAnimationStyles() {
             align-items: center;
             gap: 0.75rem;
             min-width: 280px;
+            max-width: 90%;
             transition: all 0.3s ease;
         }
         
         .toast.show {
-            bottom: 20px;
+            top: 20px;
         }
         
         .toast-success {
@@ -1295,7 +1411,35 @@ function toggleFavorite(productId) {
     }
     
     saveFavoritesToStorage();
-    loadProducts(); // Reload to update heart icons
+    
+    // Update only the heart icons without reloading everything
+    updateFavoriteButtons();
+}
+
+// Update favorite buttons without reloading the page
+function updateFavoriteButtons() {
+    // Update all favorite buttons in the DOM
+    const allFavoriteBtns = document.querySelectorAll('.favorite-btn');
+    allFavoriteBtns.forEach(btn => {
+        // Get product ID from onclick attribute
+        const onclickAttr = btn.getAttribute('onclick');
+        if (onclickAttr) {
+            const match = onclickAttr.match(/toggleFavorite\((\d+)\)/);
+            if (match) {
+                const productId = parseInt(match[1]);
+                const isFavorited = favorites.includes(productId);
+                
+                // Update button appearance
+                if (isFavorited) {
+                    btn.classList.add('favorited');
+                    btn.querySelector('i').className = 'fas fa-heart';
+                } else {
+                    btn.classList.remove('favorited');
+                    btn.querySelector('i').className = 'far fa-heart';
+                }
+            }
+        }
+    });
 }
 
 // Load favorites from localStorage
@@ -1540,18 +1684,45 @@ function loadDestaquesSection() {
     // Pega os primeiros 6 produtos
     const destaques = products.slice(0, 6);
     
-    container.innerHTML = destaques.map(product => `
-        <div class="carousel-product-card" onclick="addToCart(${product.id})">
-            <div class="carousel-product-image">
-                <img src="${product.image}" alt="${product.name}">
-                <span class="carousel-product-badge highlight">Compre 3 Pague 2</span>
+    container.innerHTML = destaques.map(product => {
+        const isFavorited = favorites.includes(product.id);
+        
+        // Render variants if product has them
+        let variantsHTML = '';
+        if (product.variants && product.variants.length > 0) {
+            variantsHTML = `
+                <div class="product-variants">
+                    ${product.variants.map((variant, index) => `
+                        <div class="variant-option ${index === 0 ? 'active' : ''}" 
+                             onclick="changeProductVariant(${product.id}, ${index}, event)"
+                             style="background-image: url('${variant.image}')"
+                             title="${variant.color}">
+                            <img src="${variant.image}" alt="${variant.color}" loading="lazy">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="carousel-product-card" data-product-id="${product.id}">
+                <div class="carousel-product-image">
+                    <button class="favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="event.stopPropagation(); toggleFavorite(${product.id})">
+                        <i class="${isFavorited ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" data-product-img="${product.id}">
+                </div>
+                <div class="carousel-product-info">
+                    <div class="carousel-product-name">${product.name}</div>
+                    <div class="carousel-product-price">R$ ${product.price.toFixed(2)}</div>
+                    <button class="product-btn" onclick="addToCart(${product.id})">
+                        <i class="fas fa-shopping-cart"></i> ADICIONAR
+                    </button>
+                </div>
+                ${variantsHTML}
             </div>
-            <div class="carousel-product-info">
-                <div class="carousel-product-name">${product.name}</div>
-                <div class="carousel-product-price">R$ ${product.price.toFixed(2)}</div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function loadOfertasSection() {
@@ -1562,20 +1733,42 @@ function loadOfertasSection() {
     const ofertas = products.slice(6, 12);
     
     container.innerHTML = ofertas.map(product => {
-        const desconto = 20 + Math.floor(Math.random() * 15); // 20-34% de desconto
-        const precoOriginal = product.price * 1.25;
+        const isFavorited = favorites.includes(product.id);
+        
+        // Render variants if product has them
+        let variantsHTML = '';
+        if (product.variants && product.variants.length > 0) {
+            variantsHTML = `
+                <div class="product-variants">
+                    ${product.variants.map((variant, index) => `
+                        <div class="variant-option ${index === 0 ? 'active' : ''}" 
+                             onclick="changeProductVariant(${product.id}, ${index}, event)"
+                             style="background-image: url('${variant.image}')"
+                             title="${variant.color}">
+                            <img src="${variant.image}" alt="${variant.color}" loading="lazy">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
         
         return `
-            <div class="carousel-product-card" onclick="addToCart(${product.id})">
+            <div class="carousel-product-card" data-product-id="${product.id}">
                 <div class="carousel-product-image">
-                    <img src="${product.image}" alt="${product.name}">
-                    <span class="carousel-product-badge">${desconto}% OFF</span>
+                    <button class="favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="event.stopPropagation(); toggleFavorite(${product.id})">
+                        <i class="${isFavorited ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" data-product-img="${product.id}">
                 </div>
                 <div class="carousel-product-info">
-                    <div class="carousel-product-price-old">R$ ${precoOriginal.toFixed(2)}</div>
                     <div class="carousel-product-name">${product.name}</div>
                     <div class="carousel-product-price">R$ ${product.price.toFixed(2)}</div>
+                    <div class="carousel-product-installment">${getInstallmentText(product.price)}</div>
+                    <button class="product-btn" onclick="addToCart(${product.id})">
+                        <i class="fas fa-shopping-cart"></i> ADICIONAR
+                    </button>
                 </div>
+                ${variantsHTML}
             </div>
         `;
     }).join('');
@@ -1588,17 +1781,46 @@ function loadLancamentosSection() {
     // Pega produtos de 12-18
     const lancamentos = products.slice(12, 18);
     
-    container.innerHTML = lancamentos.map(product => `
-        <div class="carousel-product-card" onclick="addToCart(${product.id})">
-            <div class="carousel-product-image">
-                <img src="${product.image}" alt="${product.name}">
+    container.innerHTML = lancamentos.map(product => {
+        const isFavorited = favorites.includes(product.id);
+        
+        // Render variants if product has them
+        let variantsHTML = '';
+        if (product.variants && product.variants.length > 0) {
+            variantsHTML = `
+                <div class="product-variants">
+                    ${product.variants.map((variant, index) => `
+                        <div class="variant-option ${index === 0 ? 'active' : ''}" 
+                             onclick="changeProductVariant(${product.id}, ${index}, event)"
+                             style="background-image: url('${variant.image}')"
+                             title="${variant.color}">
+                            <img src="${variant.image}" alt="${variant.color}" loading="lazy">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="carousel-product-card" data-product-id="${product.id}">
+                <div class="carousel-product-image">
+                    <button class="favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="event.stopPropagation(); toggleFavorite(${product.id})">
+                        <i class="${isFavorited ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" data-product-img="${product.id}">
+                </div>
+                <div class="carousel-product-info">
+                    <div class="carousel-product-name">${product.name}</div>
+                    <div class="carousel-product-price">R$ ${product.price.toFixed(2)}</div>
+                    <div class="carousel-product-installment">${getInstallmentText(product.price)}</div>
+                    <button class="product-btn" onclick="addToCart(${product.id})">
+                        <i class="fas fa-shopping-cart"></i> ADICIONAR
+                    </button>
+                </div>
+                ${variantsHTML}
             </div>
-            <div class="carousel-product-info">
-                <div class="carousel-product-name">${product.name}</div>
-                <div class="carousel-product-price">R$ ${product.price.toFixed(2)}</div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // ===== PROFILE SIDEBAR =====
@@ -1755,6 +1977,12 @@ function loadUserProfile() {
             logoutBtn.style.display = 'flex';
         }
         
+        // Show notifications button
+        const notificationsBtnInline = document.getElementById('notificationsBtn');
+        if (notificationsBtnInline) {
+            notificationsBtnInline.style.display = 'flex';
+        }
+        
         // Load photo if exists
         if (user && user.photo) {
             const avatarImg = document.getElementById('profileAvatarImg');
@@ -1771,6 +1999,12 @@ function loadUserProfile() {
         if (profileLoginSection) profileLoginSection.style.display = 'block';
         if (editPhotoBtn) editPhotoBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
+        
+        // Hide notifications button
+        const notificationsBtnInline = document.getElementById('notificationsBtn');
+        if (notificationsBtnInline) {
+            notificationsBtnInline.style.display = 'none';
+        }
     }
 }
 
@@ -1778,6 +2012,9 @@ function handleProfileMenuAction(action) {
     closeProfile();
     
     switch(action) {
+        case 'notificacoes':
+            openPage('notificacoes');
+            break;
         case 'meus-dados':
             openPage('meusDados');
             break;
@@ -1813,6 +2050,8 @@ function openPage(pageName) {
             // Load data when opening specific pages
             if (pageName === 'meusDados') {
                 loadMeusDadosData();
+            } else if (pageName === 'notificacoes') {
+                loadNotifications();
             }
         }, 100);
     }
@@ -1835,7 +2074,7 @@ function closePage(pageName, openProfile = false) {
 }
 
 function setupProfilePages() {
-    const pages = ['meuPerfil', 'meusDados', 'metodosPagamento', 'meusPedidos', 'configuracoes', 'sobre'];
+    const pages = ['meuPerfil', 'meusDados', 'metodosPagamento', 'meusPedidos', 'notificacoes', 'configuracoes', 'sobre'];
     
     pages.forEach(pageName => {
         const overlay = document.getElementById(`${pageName}Overlay`);
@@ -1857,6 +2096,9 @@ function setupProfilePages() {
     
     // Setup Configurações
     setupConfiguracoesPage();
+    
+    // Setup Notificações
+    setupNotificationsPage();
 }
 
 // ===== BUSCAR ENDEREÇO POR CEP (CADASTRO) =====
@@ -2470,6 +2712,7 @@ function updateProfileUI() {
     const profileAvatar = document.getElementById('profileAvatar');
     const loggedOnlyItems = document.querySelectorAll('.profile-menu-logged-only');
     const logoutBtn = document.getElementById('logoutBtn');
+    const notificationsBtn = document.getElementById('notificationsBtn');
     
     if (session) {
         // User is logged in
@@ -2488,6 +2731,9 @@ function updateProfileUI() {
             
             // Show logout button
             if (logoutBtn) logoutBtn.style.display = 'flex';
+            
+            // Show notifications button
+            if (notificationsBtn) notificationsBtn.style.display = 'flex';
             
             // Update user info
             if (profileUserName) profileUserName.textContent = user.nome;
@@ -2515,6 +2761,9 @@ function updateProfileUI() {
         
         // Hide logout button
         if (logoutBtn) logoutBtn.style.display = 'none';
+        
+        // Hide notifications button
+        if (notificationsBtn) notificationsBtn.style.display = 'none';
     }
 }
 
@@ -3331,10 +3580,509 @@ function applyTheme(theme) {
 
 // Watch for system theme changes when in auto mode
 if (window.matchMedia) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         const savedTheme = localStorage.getItem('sportshop_theme') || 'auto';
         if (savedTheme === 'auto') {
             applyTheme('auto');
         }
     });
 }
+
+// ===== NOTIFICATIONS SYSTEM =====
+let notificationsData = [];
+
+function setupNotificationsPage() {
+    const notificationsBtn = document.getElementById('notificationsBtn');
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    
+    // Open notifications page from floating button
+    if (notificationsBtn) {
+        notificationsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeProfile();
+            setTimeout(() => {
+                openPage('notificacoes');
+            }, 100);
+        });
+    }
+    
+    // Mark all as read
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', () => {
+            markAllNotificationsAsRead();
+        });
+    }
+    
+    // Initialize notifications
+    initializeNotifications();
+}
+
+function initializeNotifications() {
+    // Sample notifications data
+    notificationsData = [
+        {
+            id: 1,
+            type: 'promo',
+            icon: 'fa-tag',
+            title: 'Promoção Relâmpago! ⚡',
+            message: 'Tênis Nike Air Max com 40% OFF. Válido por 24h!',
+            time: 'Há 2 horas',
+            read: false,
+            action: { type: 'category', category: 'tenis' }
+        },
+        {
+            id: 2,
+            type: 'price-alert',
+            icon: 'fa-arrow-down',
+            title: 'Preço Baixou!',
+            message: 'Chuteira Nike Mercurial que você favoritou está R$ 150 mais barata.',
+            time: 'Há 5 horas',
+            read: false,
+            action: { type: 'category', category: 'chuteiras' }
+        },
+        {
+            id: 3,
+            type: 'order',
+            icon: 'fa-truck',
+            title: 'Pedido em Trânsito',
+            message: 'Seu pedido #230497 saiu para entrega. Previsão: hoje até 18h.',
+            time: 'Há 8 horas',
+            read: false,
+            action: { type: 'page', page: 'meusPedidos' }
+        },
+        {
+            id: 4,
+            type: 'favorite',
+            icon: 'fa-heart',
+            title: 'Produto de Volta ao Estoque!',
+            message: 'Camisa do Flamengo 2025 que você favoritou voltou ao estoque.',
+            time: 'Ontem',
+            read: true,
+            action: { type: 'category', category: 'camisas' }
+        },
+        {
+            id: 5,
+            type: 'promo',
+            icon: 'fa-gift',
+            title: 'Cupom Especial para Você',
+            message: 'Use o cupom SPORT20 e ganhe 20% de desconto na próxima compra.',
+            time: '2 dias atrás',
+            read: true,
+            action: { type: 'category', category: 'all' }
+        }
+    ];
+    
+    // Load from localStorage if exists
+    const saved = localStorage.getItem('sportshop_notifications');
+    if (saved) {
+        try {
+            notificationsData = JSON.parse(saved);
+        } catch(e) {
+            console.error('Error loading notifications:', e);
+        }
+    }
+    
+    updateNotificationsBadge();
+}
+
+function loadNotifications() {
+    const notificationsContent = document.getElementById('notificationsContent');
+    if (!notificationsContent) return;
+    
+    notificationsContent.innerHTML = '';
+    
+    if (notificationsData.length === 0) {
+        notificationsContent.innerHTML = `
+            <div class="empty-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <h3>Nenhuma notificação</h3>
+                <p>Você não tem notificações no momento.<br>Fique atento às novidades!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    notificationsData.forEach(notification => {
+        const notificationEl = document.createElement('div');
+        notificationEl.className = `notification-item ${notification.read ? '' : 'unread'}`;
+        notificationEl.innerHTML = `
+            <div class="notification-icon ${notification.type}">
+                <i class="fas ${notification.icon}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                <div class="notification-time">${notification.time}</div>
+            </div>
+            ${!notification.read ? '<div class="notification-badge-dot"></div>' : ''}
+        `;
+        
+        notificationEl.addEventListener('click', () => {
+            markNotificationAsRead(notification.id);
+            handleNotificationAction(notification);
+        });
+        
+        notificationsContent.appendChild(notificationEl);
+    });
+}
+
+function updateNotificationsBadge() {
+    const unreadCount = notificationsData.filter(n => !n.read).length;
+    const badge = document.getElementById('notificationsBadge');
+    
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function markNotificationAsRead(notificationId) {
+    const notification = notificationsData.find(n => n.id === notificationId);
+    if (notification && !notification.read) {
+        notification.read = true;
+        saveNotifications();
+        updateNotificationsBadge();
+        loadNotifications();
+    }
+}
+
+function handleNotificationAction(notification) {
+    if (!notification.action) return;
+    
+    // Close notifications page
+    closePage('notificacoes', false);
+    
+    setTimeout(() => {
+        switch(notification.action.type) {
+            case 'category':
+                // Navigate to category
+                if (notification.action.category === 'all') {
+                    loadProducts('all');
+                } else {
+                    filterByCategory(notification.action.category);
+                }
+                // Switch to products page
+                switchPage('produtos');
+                break;
+                
+            case 'page':
+                // Open specific page (e.g., Meus Pedidos)
+                openPage(notification.action.page);
+                break;
+                
+            case 'product':
+                // If we have a specific product ID in the future
+                if (notification.action.productId) {
+                    // For now, just go to the category
+                    if (notification.action.category) {
+                        filterByCategory(notification.action.category);
+                    }
+                    switchPage('produtos');
+                }
+                break;
+                
+            default:
+                break;
+        }
+    }, 300);
+}
+
+function markAllNotificationsAsRead() {
+    let hasUnread = false;
+    notificationsData.forEach(notification => {
+        if (!notification.read) {
+            notification.read = true;
+            hasUnread = true;
+        }
+    });
+    
+    if (hasUnread) {
+        saveNotifications();
+        updateNotificationsBadge();
+        loadNotifications();
+        showToast('Todas as notificações foram marcadas como lidas', 'success');
+    }
+}
+
+function saveNotifications() {
+    localStorage.setItem('sportshop_notifications', JSON.stringify(notificationsData));
+}
+
+function addNotification(type, icon, title, message, action = null) {
+    const newNotification = {
+        id: Date.now(),
+        type: type,
+        icon: icon,
+        title: title,
+        message: message,
+        time: 'Agora',
+        read: false,
+        action: action
+    };
+    
+    notificationsData.unshift(newNotification);
+    saveNotifications();
+    updateNotificationsBadge();
+    
+    // Show browser notification if enabled
+    const notificationsEnabled = localStorage.getItem('sportshop_notifications_enabled');
+    if (notificationsEnabled === 'enabled' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: message,
+            icon: 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>⚽</text></svg>'
+        });
+    }
+}
+
+// ===== PRODUCT DETAIL PAGE =====
+let currentProduct = null;
+let selectedVariant = null;
+let selectedSize = null;
+let productQuantity = 1;
+
+function setupProductDetailPage() {
+    const pages = ['productDetail'];
+    
+    pages.forEach(pageName => {
+        const overlay = document.getElementById(`${pageName}Overlay`);
+        const backBtn = document.getElementById(`${pageName}BackBtn`);
+        
+        if (overlay) {
+            overlay.addEventListener('click', () => closePage(pageName, false));
+        }
+        
+        if (backBtn) {
+            backBtn.addEventListener('click', () => closePage(pageName, false));
+        }
+    });
+    
+    const shareBtn = document.getElementById('productShareBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', shareProduct);
+    }
+}
+
+function openProductDetail(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    currentProduct = product;
+    selectedVariant = product.variants ? product.variants[0] : null;
+    selectedSize = null;
+    productQuantity = 1;
+    
+    renderProductDetail();
+    openPage('productDetail');
+}
+
+function renderProductDetail() {
+    const content = document.getElementById('productDetailContent');
+    if (!content || !currentProduct) return;
+    
+    const images = [];
+    if (currentProduct.variants && currentProduct.variants.length > 0) {
+        currentProduct.variants.forEach(variant => {
+            images.push(variant.image);
+        });
+    } else {
+        images.push(currentProduct.image);
+    }
+    
+    const currentImage = selectedVariant ? selectedVariant.image : currentProduct.image;
+    
+    let variantsHTML = '';
+    if (currentProduct.variants && currentProduct.variants.length > 1) {
+        variantsHTML = `
+            <div class="product-variants">
+                <span class="variant-label">Cor: ${selectedVariant ? selectedVariant.color : ''}</span>
+                <div class="variant-colors">
+                    ${currentProduct.variants.map((variant, index) => `
+                        <div class="color-option ${selectedVariant === variant ? 'active' : ''}" 
+                             style="background-color: ${variant.colorCode}"
+                             onclick="selectVariant(${index})"
+                             title="${variant.color}">
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Add sizes if product is clothing
+    let sizesHTML = '';
+    if (['camisas', 'jaquetas', 'calcoes'].includes(currentProduct.category)) {
+        const sizes = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
+        sizesHTML = `
+            <div class="product-variants">
+                <span class="variant-label">Tamanho:</span>
+                <div class="variant-sizes">
+                    ${sizes.map(size => `
+                        <button class="size-option ${selectedSize === size ? 'active' : ''}"
+                                onclick="selectSize('${size}')">
+                            ${size}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else if (['tenis', 'chuteiras'].includes(currentProduct.category)) {
+        const sizes = ['37', '38', '39', '40', '41', '42', '43', '44'];
+        sizesHTML = `
+            <div class="product-variants">
+                <span class="variant-label">Tamanho:</span>
+                <div class="variant-sizes">
+                    ${sizes.map(size => `
+                        <button class="size-option ${selectedSize === size ? 'active' : ''}"
+                                onclick="selectSize('${size}')">
+                            ${size}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    content.innerHTML = `
+        <div class="product-detail-images">
+            <img src="${currentImage}" alt="${currentProduct.name}" class="product-main-image">
+            ${images.length > 1 ? `
+                <div class="product-image-indicators">
+                    ${images.map((img, index) => `
+                        <div class="image-indicator ${img === currentImage ? 'active' : ''}"
+                             onclick="changeProductImage(${index})"></div>
+                    `).join('')}
+                </div>
+            ` : ''}
+        </div>
+        
+        <div class="product-detail-info">
+            <h1 class="product-detail-title">${currentProduct.name}</h1>
+            <div class="product-detail-price">R$ ${currentProduct.price.toFixed(2)}</div>
+            <p class="product-detail-description">${currentProduct.description}</p>
+            
+            ${variantsHTML}
+            ${sizesHTML}
+            
+            <div class="product-quantity">
+                <span class="variant-label">Quantidade:</span>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" onclick="decreaseQuantity()">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="quantity-value" id="productQuantityValue">${productQuantity}</span>
+                    <button class="quantity-btn" onclick="increaseQuantity()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="product-actions">
+            <button class="btn-add-to-cart" onclick="addToCartFromDetail()">
+                <i class="fas fa-cart-plus"></i>
+                Adicionar ao Carrinho
+            </button>
+            <button class="btn-buy-now" onclick="buyNowFromDetail()">
+                <i class="fas fa-bolt"></i>
+                Comprar Agora
+            </button>
+        </div>
+    `;
+}
+
+function selectVariant(index) {
+    if (currentProduct.variants) {
+        selectedVariant = currentProduct.variants[index];
+        renderProductDetail();
+    }
+}
+
+function selectSize(size) {
+    selectedSize = size;
+    renderProductDetail();
+}
+
+function changeProductImage(index) {
+    if (currentProduct.variants && currentProduct.variants[index]) {
+        selectedVariant = currentProduct.variants[index];
+        renderProductDetail();
+    }
+}
+
+function increaseQuantity() {
+    productQuantity++;
+    document.getElementById('productQuantityValue').textContent = productQuantity;
+}
+
+function decreaseQuantity() {
+    if (productQuantity > 1) {
+        productQuantity--;
+        document.getElementById('productQuantityValue').textContent = productQuantity;
+    }
+}
+
+function addToCartFromDetail() {
+    if (!currentProduct) return;
+    
+    // Validate size selection for clothing/shoes
+    if (['camisas', 'jaquetas', 'calcoes', 'tenis', 'chuteiras'].includes(currentProduct.category)) {
+        if (!selectedSize) {
+            showToast('Por favor, selecione um tamanho', 'error');
+            return;
+        }
+    }
+    
+    // Add to cart with selected options
+    for (let i = 0; i < productQuantity; i++) {
+        addToCart(currentProduct.id);
+    }
+    
+    showToast(`${productQuantity}x ${currentProduct.name} adicionado ao carrinho!`, 'success');
+    closePage('productDetail', false);
+}
+
+function buyNowFromDetail() {
+    if (!currentProduct) return;
+    
+    // Validate size selection
+    if (['camisas', 'jaquetas', 'calcoes', 'tenis', 'chuteiras'].includes(currentProduct.category)) {
+        if (!selectedSize) {
+            showToast('Por favor, selecione um tamanho', 'error');
+            return;
+        }
+    }
+    
+    // Add to cart
+    for (let i = 0; i < productQuantity; i++) {
+        addToCart(currentProduct.id);
+    }
+    
+    // Close detail and go to checkout
+    closePage('productDetail', false);
+    setTimeout(() => {
+        window.location.href = 'checkout.html';
+    }, 300);
+}
+
+function shareProduct() {
+    if (!currentProduct) return;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: currentProduct.name,
+            text: `Confira: ${currentProduct.name} - R$ ${currentProduct.price.toFixed(2)}`,
+            url: window.location.href
+        }).catch(err => console.log('Erro ao compartilhar:', err));
+    } else {
+        // Fallback: copy link
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Link copiado!', 'success');
+    }
+}
+
+// Call setup when page loads
+setupProductDetailPage();

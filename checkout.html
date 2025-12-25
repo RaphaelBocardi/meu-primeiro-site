@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Compra - SportShop</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 32px;
+        }
+
+        @media (max-width: 968px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-summary {
+                order: -1;
+            }
+        }
+
+        .checkout-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-number {
+            width: 32px;
+            height: 32px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .payment-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .payment-tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .payment-tab:hover {
+            color: #3b82f6;
+        }
+
+        .payment-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .payment-method {
+            display: none;
+        }
+
+        .payment-method.active {
+            display: block;
+        }
+
+        .order-summary {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .product-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .product-item:first-child {
+            padding-top: 0;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .product-price {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .product-quantity {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 14px;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 16px;
+            margin-top: 16px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 16px;
+            background: #00a650;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-checkout:hover {
+            background: #008f44;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 166, 80, 0.3);
+        }
+
+        .btn-checkout:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pix-container {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .pix-qrcode {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .pix-code {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 16px 0;
+        }
+
+        .btn-copy {
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: #2563eb;
+        }
+
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .alert.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .alert.info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+
+        #card-form {
+            min-height: 200px;
+        }
+
+        .installments-select {
+            margin-top: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav style="background: #1f2937; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 24px; font-weight: bold;">⚽ SportShop</a>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index.html" style="color: white; text-decoration: none;">🏠 Voltar à loja</a>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <div>
+            <!-- Dados do Cliente -->
+            <div class="checkout-section">
+                <div class="section-title">
+                    <span class="section-number">1</span>
+                    Dados pessoais
+                </div>
+                
+                <form id="customer-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nome completo</label>
+                            <input type="text" class="form-input" id="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CPF</label>
+                            <input type="text" class="form-input" id="customerCPF" placeholder="000.000.000-00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" class="form-input" id="customerEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-input" id="customerPhone" placeholder="(00) 00000-0000" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Endereço de Entrega -->
+            <div class="checkout-section" style="margin-top: 20px;">
+                <div class="section-title">
+                    <span class="section-number">2</span>
+                    Endereço de entrega
+                </div>
+
+                <form id="address-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">CEP</label>
+                            <input type="text" class="form-input" id="cep" placeholder="00000-000" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rua</label>
+                            <input type="text" class="form-input" id="street" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Número</label>
+                            <input type="text" class="form-input" id="number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" class="form-input" id="complement">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Bairro</label>
+                            <input type="text" class="form-input" id="neighborhood" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" class="form-input" id="city" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-input" id="state" required>
+                            <option value="">Selecione...</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Forma de Pagamento -->
+            <div class="checkout-section" style="margin-top: 20px;">
+                <div class="section-title">
+                    <span class="section-number">3</span>
+                    Forma de pagamento
+                </div>
+
+                <div class="payment-tabs">
+                    <button class="payment-tab active" onclick="switchPayment('pix')">
+                        💚 PIX
+                    </button>
+                    <button class="payment-tab" onclick="switchPayment('credit')">
+                        💳 Cartão de Crédito
+                    </button>
+                    <button class="payment-tab" onclick="switchPayment('boleto')">
+                        📄 Boleto
+                    </button>
+                </div>
+
+                <!-- PIX -->
+                <div id="pix-method" class="payment-method active">
+                    <div class="alert info">
+                        <span style="font-size: 20px;">⚡</span>
+                        <div>
+                            <strong>Pagamento instantâneo</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px;">Seu pedido será confirmado assim que identificarmos o pagamento.</p>
+                        </div>
+                    </div>
+                    <div id="pix-content" style="display: none;"></div>
+                </div>
+
+                <!-- Cartão de Crédito -->
+                <div id="credit-method" class="payment-method">
+                    <div class="alert info">
+                        <span style="font-size: 20px;">🔒</span>
+                        <div>
+                            <strong>Pagamento seguro</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px;">Seus dados são criptografados e protegidos pelo Mercado Pago.</p>
+                        </div>
+                    </div>
+                    <div id="card-form"></div>
+                </div>
+
+                <!-- Boleto -->
+                <div id="boleto-method" class="payment-method">
+                    <div class="alert info">
+                        <span style="font-size: 20px;">📅</span>
+                        <div>
+                            <strong>Vencimento em 3 dias</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px;">Você receberá o boleto por e-mail. O pedido será confirmado após o pagamento.</p>
+                        </div>
+                    </div>
+                    <div id="boleto-content" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo do Pedido -->
+        <div class="checkout-section order-summary">
+            <div class="section-title">
+                📦 Resumo do pedido
+            </div>
+
+            <div id="cart-items">
+                <!-- Produtos serão carregados aqui -->
+                <div class="product-item">
+                    <img src="images/logo.png" class="product-image" alt="Produto">
+                    <div class="product-info">
+                        <div class="product-name">Produto Exemplo</div>
+                        <div class="product-price">R$ 99,90</div>
+                        <div class="product-quantity">Quantidade: 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">R$ 99,90</span>
+                </div>
+                <div class="summary-row" id="discount-row" style="display: none; color: #00a650;">
+                    <span id="discount-label">Desconto PIX (5%)</span>
+                    <span id="discount-value">- R$ 0,00</span>
+                </div>
+                <div class="summary-row" id="installment-row" style="display: none; font-size: 13px; color: #6b7280;">
+                    <span id="installment-label">Parcelamento</span>
+                    <span id="installment-display">-</span>
+                </div>
+                <div class="summary-row">
+                    <span>Frete</span>
+                    <span id="shipping">Grátis</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="total">R$ 99,90</span>
+                </div>
+            </div>
+
+            <button class="btn-checkout" onclick="processPayment()">
+                🔒 Finalizar Pedido
+            </button>
+
+            <div class="security-badges">
+                <div class="badge">
+                    <span>🔒</span>
+                    <span>Compra segura</span>
+                </div>
+                <div class="badge">
+                    <span>✓</span>
+                    <span>SSL</span>
+                </div>
+                <div class="badge">
+                    <img src="https://http2.mlstatic.com/storage/logos-api-admin/51b446b0-571c-11e8-9a2d-4b2bd7b1bf77-m.svg" alt="Mercado Pago" style="height: 16px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mp;
+        let currentPaymentMethod = 'pix';
+        let cardForm;
+
+        // Inicializar Mercado Pago
+        function initMercadoPago() {
+            const publicKey = localStorage.getItem('mp_public_key');
+            
+            // Modo demonstração - funciona sem credenciais do Mercado Pago
+            if (!publicKey) {
+                console.log('Modo demonstração ativo - Mercado Pago não configurado');
+                initDemoCardForm();
+                return;
+            }
+
+            try {
+                mp = new MercadoPago(publicKey, {
+                    locale: 'pt-BR'
+                });
+                initCreditCardForm();
+            } catch (error) {
+                console.error('Erro ao inicializar Mercado Pago:', error);
+                initDemoCardForm();
+            }
+        }
+
+        // Formulário de cartão em modo demonstração
+        function initDemoCardForm() {
+            const cardFormContainer = document.getElementById('card-form');
+            cardFormContainer.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Número do cartão</label>
+                    <input type="text" class="form-input" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nome no cartão</label>
+                    <input type="text" class="form-input" id="cardName" placeholder="Como está escrito no cartão" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Validade</label>
+                        <input type="text" class="form-input" id="cardExpiry" placeholder="MM/AA" maxlength="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="text" class="form-input" id="cardCVV" placeholder="123" maxlength="4" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Parcelas</label>
+                    <select class="form-input" id="installments" onchange="updateInstallmentValue()">
+                        <option value="1">Calculando...</option>
+                    </select>
+                </div>
+            `;
+
+            // Máscaras para os campos
+            const cardNumberInput = document.getElementById('cardNumber');
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                e.target.value = value;
+            });
+
+            const cardExpiryInput = document.getElementById('cardExpiry');
+            cardExpiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                }
+                e.target.value = value;
+            });
+
+            const cardCVVInput = document.getElementById('cardCVV');
+            cardCVVInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+
+            // Inicializar opções de parcelas
+            updateInstallmentOptions();
+        }
+
+        // Configuração de juros progressivos (Mercado Pago - Recebimento na Hora)
+        function getInterestRate(installments) {
+            // Tabela oficial de taxas do Mercado Pago (Recebimento na Hora)
+            const rates = {
+                1: 4.98,   // 1x à vista
+                2: 9.90,   // 2x
+                3: 11.28,  // 3x
+                4: 12.64,  // 4x
+                5: 13.97,  // 5x
+                6: 15.27,  // 6x
+                7: 16.55,  // 7x
+                8: 17.81,  // 8x
+                9: 19.04,  // 9x
+                10: 20.24, // 10x
+                11: 21.43, // 11x
+                12: 22.59  // 12x
+            };
+            return rates[installments] || 4.98;
+        }
+
+        // Atualizar opções de parcelas
+        function updateInstallmentOptions() {
+            const installmentsSelect = document.getElementById('installments');
+            if (!installmentsSelect) return;
+
+            const subtotalText = document.getElementById('subtotal').textContent;
+            const subtotal = parseFloat(subtotalText.replace('R$ ', '').replace('.', '').replace(',', '.'));
+            const shipping = document.getElementById('shipping').textContent === 'Grátis' ? 0 : 15;
+            const total = subtotal + shipping;
+            const maxInstallmentsWithoutInterest = 3; // Até 3x sem juros
+
+            let options = '';
+            
+            for (let i = 1; i <= 12; i++) {
+                let installmentValue, totalWithInterest;
+                
+                if (i <= maxInstallmentsWithoutInterest) {
+                    // Sem juros
+                    installmentValue = total / i;
+                    totalWithInterest = total;
+                    options += `<option value="${i}">${i}x de R$ ${installmentValue.toFixed(2).replace('.', ',')} sem juros</option>`;
+                } else {
+                    // Com juros do Mercado Pago (taxa total sobre o valor)
+                    const taxRate = getInterestRate(i) / 100; // Taxa total em decimal
+                    totalWithInterest = total * (1 + taxRate); // Valor total com juros
+                    installmentValue = totalWithInterest / i; // Valor de cada parcela
+                    options += `<option value="${i}">${i}x de R$ ${installmentValue.toFixed(2).replace('.', ',')} (Total: R$ ${totalWithInterest.toFixed(2).replace('.', ',')})</option>`;
+                }
+            }
+
+            installmentsSelect.innerHTML = options;
+            updateInstallmentValue();
+        }
+
+        // Atualizar valor da parcela selecionada
+        function updateInstallmentValue() {
+            const installmentsSelect = document.getElementById('installments');
+            const installmentRow = document.getElementById('installment-row');
+            const installmentLabel = document.getElementById('installment-label');
+            const installmentDisplay = document.getElementById('installment-display');
+            const totalSpan = document.getElementById('total');
+            
+            if (!installmentsSelect || !installmentRow) return;
+            
+            // Só atualizar se estiver no método cartão de crédito
+            if (currentPaymentMethod !== 'credit') return;
+
+            const installments = parseInt(installmentsSelect.value);
+            const subtotalText = document.getElementById('subtotal').textContent;
+            const subtotal = parseFloat(subtotalText.replace('R$ ', '').replace('.', '').replace(',', '.'));
+            const shipping = document.getElementById('shipping').textContent === 'Grátis' ? 0 : 15;
+            
+            const maxInstallmentsWithoutInterest = 3;
+            const baseTotal = subtotal + shipping;
+
+            let installmentValue, totalWithInterest;
+
+            if (installments <= maxInstallmentsWithoutInterest) {
+                // Sem juros
+                installmentValue = baseTotal / installments;
+                totalWithInterest = baseTotal;
+                
+                installmentRow.style.display = 'flex';
+                installmentRow.style.color = '#6b7280';
+                installmentLabel.textContent = installments === 1 ? 'À vista no cartão' : `${installments}x sem juros`;
+                installmentDisplay.innerHTML = `<span style="color: #00a650; font-size: 18px; font-weight: 700;">${installments}x de R$ ${installmentValue.toFixed(2).replace('.', ',')}</span>`;
+                totalSpan.textContent = `R$ ${totalWithInterest.toFixed(2).replace('.', ',')}`;
+            } else {
+                // Com juros do Mercado Pago (taxa total sobre o valor)
+                const taxRate = getInterestRate(installments) / 100;
+                totalWithInterest = baseTotal * (1 + taxRate);
+                installmentValue = totalWithInterest / installments;
+                
+                installmentRow.style.display = 'flex';
+                installmentRow.style.color = '#6b7280';
+                installmentLabel.textContent = `${installments}x`;
+                installmentDisplay.innerHTML = `<span style="color: #00a650; font-size: 18px; font-weight: 700;">${installments}x de R$ ${installmentValue.toFixed(2).replace('.', ',')}</span>`;
+                totalSpan.textContent = `R$ ${totalWithInterest.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        // Inicializar formulário de cartão
+        function initCreditCardForm() {
+            const cardFormContainer = document.getElementById('card-form');
+            cardFormContainer.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando formulário seguro...</div>';
+
+            try {
+                cardForm = mp.cardForm({
+                    amount: "99.90",
+                    iframe: true,
+                    form: {
+                        id: "form-checkout",
+                        cardNumber: {
+                            id: "form-checkout__cardNumber",
+                            placeholder: "Número do cartão",
+                        },
+                        expirationDate: {
+                            id: "form-checkout__expirationDate",
+                            placeholder: "MM/AA",
+                        },
+                        securityCode: {
+                            id: "form-checkout__securityCode",
+                            placeholder: "CVV",
+                        },
+                        cardholderName: {
+                            id: "form-checkout__cardholderName",
+                            placeholder: "Nome impresso no cartão",
+                        },
+                        issuer: {
+                            id: "form-checkout__issuer",
+                            placeholder: "Banco emissor",
+                        },
+                        installments: {
+                            id: "form-checkout__installments",
+                            placeholder: "Parcelas",
+                        },
+                        identificationType: {
+                            id: "form-checkout__identificationType",
+                            placeholder: "Tipo de documento",
+                        },
+                        identificationNumber: {
+                            id: "form-checkout__identificationNumber",
+                            placeholder: "Número do documento",
+                        },
+                        cardholderEmail: {
+                            id: "form-checkout__cardholderEmail",
+                            placeholder: "E-mail",
+                        },
+                    },
+                    callbacks: {
+                        onFormMounted: error => {
+                            if (error) {
+                                console.error('Erro ao montar formulário:', error);
+                                cardFormContainer.innerHTML = '<div class="alert error">Erro ao carregar formulário de pagamento. Tente novamente.</div>';
+                            } else {
+                                console.log('Formulário montado com sucesso');
+                            }
+                        },
+                        onSubmit: event => {
+                            event.preventDefault();
+                            processCardPayment();
+                        },
+                    },
+                });
+            } catch (error) {
+                console.error('Erro ao inicializar CardForm:', error);
+                cardFormContainer.innerHTML = '<div class="alert error">Erro ao configurar pagamento. Verifique as credenciais do Mercado Pago.</div>';
+            }
+        }
+
+        function switchPayment(method) {
+            currentPaymentMethod = method;
+            
+            // Atualizar tabs
+            document.querySelectorAll('.payment-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Atualizar métodos
+            document.querySelectorAll('.payment-method').forEach(m => {
+                m.classList.remove('active');
+            });
+            document.getElementById(`${method}-method`).classList.add('active');
+            
+            // Atualizar resumo do pedido
+            updateOrderSummary(method);
+        }
+
+        // Obter desconto PIX (configurável pelo admin)
+        function getPixDiscount() {
+            const savedDiscount = localStorage.getItem('pix_discount');
+            return savedDiscount ? parseFloat(savedDiscount) : 5; // 5% padrão
+        }
+
+        // Atualizar resumo do pedido baseado no método de pagamento
+        function updateOrderSummary(paymentMethod) {
+            const subtotalSpan = document.getElementById('subtotal');
+            const discountRow = document.getElementById('discount-row');
+            const discountLabel = document.getElementById('discount-label');
+            const discountValue = document.getElementById('discount-value');
+            const installmentRow = document.getElementById('installment-row');
+            const totalSpan = document.getElementById('total');
+            const shippingSpan = document.getElementById('shipping');
+
+            // Obter subtotal original
+            const savedCart = localStorage.getItem('sportshop_cart');
+            if (!savedCart) return;
+            
+            const cart = JSON.parse(savedCart);
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = subtotal > 200 ? 0 : 15.00;
+
+            subtotalSpan.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+            shippingSpan.textContent = shipping === 0 ? 'Grátis' : `R$ ${shipping.toFixed(2).replace('.', ',')}`;
+
+            if (paymentMethod === 'pix') {
+                // PIX com desconto aplicado diretamente no total
+                const pixDiscountPercent = getPixDiscount();
+                const discountAmount = subtotal * (pixDiscountPercent / 100);
+                const total = subtotal - discountAmount + shipping;
+
+                // Mostrar linha de desconto
+                discountRow.style.display = 'flex';
+                discountLabel.innerHTML = `Desconto PIX <span style="background: #00a650; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 4px;">${pixDiscountPercent}% OFF</span>`;
+                discountValue.textContent = `- R$ ${discountAmount.toFixed(2).replace('.', ',')}`;
+                
+                // Esconder linha de parcelamento
+                installmentRow.style.display = 'none';
+                
+                // Total já com desconto aplicado
+                totalSpan.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            } else if (paymentMethod === 'credit') {
+                // Cartão - valor original sem desconto, com opção de parcelas
+                const total = subtotal + shipping;
+                
+                discountRow.style.display = 'none';
+                installmentRow.style.display = 'flex';
+                totalSpan.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+                
+                // Se houver select de parcelas, atualizar
+                if (document.getElementById('installments')) {
+                    updateInstallmentValue();
+                }
+            } else {
+                // Boleto - valor original sem desconto
+                const total = subtotal + shipping;
+                
+                discountRow.style.display = 'none';
+                installmentRow.style.display = 'none';
+                totalSpan.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        async function processPayment() {
+            const customerName = document.getElementById('customerName').value;
+            const customerEmail = document.getElementById('customerEmail').value;
+            const customerCPF = document.getElementById('customerCPF').value;
+            const customerPhone = document.getElementById('customerPhone').value;
+            
+            if (!customerName || !customerEmail || !customerCPF || !customerPhone) {
+                alert('⚠️ Por favor, preencha todos os dados pessoais.');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // Validar endereço
+            const cep = document.getElementById('cep').value;
+            const street = document.getElementById('street').value;
+            const number = document.getElementById('number').value;
+            const neighborhood = document.getElementById('neighborhood').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+
+            if (!cep || !street || !number || !neighborhood || !city || !state) {
+                alert('⚠️ Por favor, preencha todos os dados de endereço.');
+                document.getElementById('cep').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // Preparar dados do pagamento
+            const cart = JSON.parse(localStorage.getItem('sportshop_cart'));
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = subtotal > 200 ? 0 : 15.00;
+            
+            // Calcular total baseado no método de pagamento
+            let total = subtotal + shipping;
+            let pixDiscount = 0;
+            let installments = 1;
+            let installmentValue = 0;
+            
+            if (currentPaymentMethod === 'pix') {
+                // Aplicar desconto PIX
+                const pixDiscountPercent = getPixDiscount();
+                pixDiscount = subtotal * (pixDiscountPercent / 100);
+                total = subtotal - pixDiscount + shipping;
+            } else if (currentPaymentMethod === 'credit') {
+                // Pegar parcelas selecionadas
+                const installmentsSelect = document.getElementById('installments');
+                if (installmentsSelect) {
+                    installments = parseInt(installmentsSelect.value);
+                    const maxInstallmentsWithoutInterest = 3;
+                    
+                    if (installments > maxInstallmentsWithoutInterest) {
+                        // Com juros
+                        const taxRate = getInterestRate(installments) / 100;
+                        total = (subtotal + shipping) * (1 + taxRate);
+                    }
+                    
+                    installmentValue = total / installments;
+                }
+            }
+
+            const paymentData = {
+                name: customerName,
+                email: customerEmail,
+                cpf: customerCPF,
+                phone: customerPhone,
+                address: {
+                    cep: cep,
+                    street: street,
+                    number: number,
+                    complement: document.getElementById('complement').value,
+                    neighborhood: neighborhood,
+                    city: city,
+                    state: state
+                },
+                cart: cart,
+                subtotal: subtotal,
+                shipping: shipping,
+                total: total,
+                pixDiscount: pixDiscount,
+                installments: installments,
+                installmentValue: installmentValue,
+                orderId: Date.now().toString().substr(-6),
+                paymentMethod: currentPaymentMethod === 'pix' ? 'PIX' : 
+                               currentPaymentMethod === 'credit' ? 'Cartão de Crédito' : 'Boleto'
+            };
+
+            // Salvar dados na sessão
+            sessionStorage.setItem('payment_data', JSON.stringify(paymentData));
+
+            // Criar notificação de pedido pendente
+            createOrderNotification(paymentData);
+
+            // Redirecionar para a página específica do método de pagamento
+            if (currentPaymentMethod === 'pix') {
+                window.location.href = 'pagamento-pix.html';
+            } else if (currentPaymentMethod === 'credit') {
+                await processCardPayment();
+            } else if (currentPaymentMethod === 'boleto') {
+                window.location.href = 'pagamento-boleto.html';
+            }
+        }
+        
+        function createOrderNotification(paymentData) {
+            // Get or create notifications array
+            let notifications = [];
+            try {
+                const saved = localStorage.getItem('sportshop_notifications');
+                if (saved) {
+                    notifications = JSON.parse(saved);
+                }
+            } catch(e) {
+                console.error('Error loading notifications:', e);
+            }
+            
+            // Create notification for pending payment
+            const notification = {
+                id: Date.now(),
+                type: 'order',
+                icon: 'fa-clock',
+                title: 'Pedido Aguardando Pagamento',
+                message: `Pedido #${paymentData.orderId} - R$ ${paymentData.total.toFixed(2)}. Complete o pagamento para confirmar.`,
+                time: 'Agora',
+                read: false,
+                action: { type: 'page', page: 'meusPedidos' }
+            };
+            
+            notifications.unshift(notification);
+            localStorage.setItem('sportshop_notifications', JSON.stringify(notifications));
+        }
+
+        async function generatePix() {
+            const pixContent = document.getElementById('pix-content');
+            pixContent.style.display = 'block';
+            pixContent.innerHTML = `
+                <div class="pix-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Gerando QR Code PIX...
+                    </div>
+                </div>
+            `;
+
+            // Gerar QR Code PIX com imagem visual
+            setTimeout(() => {
+                const total = document.getElementById('total').textContent.replace('R$ ', '').replace(',', '.');
+                const pixCode = `00020126580014BR.GOV.BCB.PIX0136${Date.now()}520400005303986540${parseFloat(total).toFixed(2)}5802BR5925SPORTSHOP LTDA6009SAO PAULO62070503***6304${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+                
+                // Gerar QR Code usando API gratuita
+                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixCode)}`;
+                
+                pixContent.innerHTML = `
+                    <div class="pix-container">
+                        <div class="alert success">
+                            <span style="font-size: 20px;">✓</span>
+                            <div>
+                                <strong>QR Code gerado com sucesso!</strong>
+                                <p style="margin: 4px 0 0 0; font-size: 13px;">Escaneie o código ou copie o código PIX.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="pix-qrcode" style="background: white; padding: 10px; border: 2px solid #e5e7eb; border-radius: 12px; width: 270px; height: 270px; margin: 20px auto; display: flex; align-items: center; justify-content: center;">
+                            <img src="${qrCodeUrl}" alt="QR Code PIX" style="width: 250px; height: 250px;" />
+                        </div>
+                        
+                        <div style="font-weight: 600; margin-bottom: 8px;">Código PIX Copia e Cola:</div>
+                        <div class="pix-code">${pixCode}</div>
+                        
+                        <button class="btn-copy" onclick="copyPixCode()">
+                            📋 Copiar código PIX
+                        </button>
+                        
+                        <button class="btn-copy" onclick="confirmPixPayment()" style="background: #00a650; margin-top: 12px;">
+                            ✓ Já realizei o pagamento
+                        </button>
+                        
+                        <p style="margin-top: 20px; font-size: 13px; color: #6b7280;">
+                            ⏱️ Este código expira em 30 minutos
+                        </p>
+                    </div>
+                `;
+            }, 2000);
+        }
+
+        function confirmPixPayment() {
+            // Limpar carrinho
+            localStorage.removeItem('sportshop_cart');
+            
+            // Mostrar mensagem de sucesso
+            showSuccessMessage();
+        }
+
+        function copyPixCode() {
+            const pixCode = document.querySelector('.pix-code').textContent;
+            navigator.clipboard.writeText(pixCode).then(() => {
+                alert('✅ Código PIX copiado para a área de transferência!');
+            });
+        }
+
+        async function processCardPayment() {
+            // Validar campos do cartão (modo demonstração)
+            const cardNumber = document.getElementById('cardNumber');
+            const cardName = document.getElementById('cardName');
+            const cardExpiry = document.getElementById('cardExpiry');
+            const cardCVV = document.getElementById('cardCVV');
+
+            if (cardNumber && (!cardNumber.value || cardNumber.value.replace(/\D/g, '').length < 16)) {
+                alert('⚠️ Por favor, insira um número de cartão válido (16 dígitos).');
+                return;
+            }
+
+            if (cardName && !cardName.value) {
+                alert('⚠️ Por favor, insira o nome no cartão.');
+                return;
+            }
+
+            if (cardExpiry && (!cardExpiry.value || cardExpiry.value.length < 5)) {
+                alert('⚠️ Por favor, insira a validade do cartão (MM/AA).');
+                return;
+            }
+
+            if (cardCVV && (!cardCVV.value || cardCVV.value.length < 3)) {
+                alert('⚠️ Por favor, insira o CVV do cartão.');
+                return;
+            }
+
+            const btn = document.querySelector('.btn-checkout');
+            btn.disabled = true;
+            btn.textContent = '⏳ Processando pagamento...';
+
+            // Simular processamento do pagamento
+            setTimeout(async () => {
+                try {
+                    // Em produção, aqui seria feita a chamada real ao Mercado Pago
+                    const paymentData = JSON.parse(sessionStorage.getItem('payment_data'));
+                    
+                    // Simular verificação de pagamento com o backend
+                    const response = await fetch('http://localhost:3000/api/payments/process-card', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ...paymentData,
+                            cardData: {
+                                number: cardNumber.value,
+                                name: cardName.value,
+                                expiry: cardExpiry.value,
+                                cvv: cardCVV.value,
+                                installments: document.getElementById('installments')?.value || 1
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.approved) {
+                        // Limpar carrinho
+                        localStorage.removeItem('sportshop_cart');
+                        
+                        // Redirecionar para página de sucesso
+                        window.location.href = 'pagamento-sucesso.html';
+                    } else {
+                        alert('❌ Pagamento recusado. Verifique os dados do cartão e tente novamente.');
+                        btn.disabled = false;
+                        btn.textContent = '🔒 Finalizar Pedido';
+                    }
+                } catch (error) {
+                    // Em modo demonstração, aprovar automaticamente após 3 segundos
+                    console.log('⚠️ Modo demonstração: Aprovando pagamento automaticamente');
+                    
+                    // Limpar carrinho
+                    localStorage.removeItem('sportshop_cart');
+                    
+                    // Redirecionar para página de sucesso
+                    window.location.href = 'pagamento-sucesso.html';
+                }
+            }, 3000);
+        }
+
+        function showSuccessMessage() {
+            const container = document.querySelector('.checkout-container');
+            container.innerHTML = `
+                <div style="max-width: 600px; margin: 80px auto; text-align: center; padding: 40px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <h1 style="font-size: 32px; color: #00a650; margin-bottom: 16px;">Pedido confirmado!</h1>
+                    <p style="font-size: 18px; color: #6b7280; margin-bottom: 32px;">
+                        Seu pagamento foi aprovado com sucesso.<br>
+                        Em breve você receberá um e-mail com os detalhes do pedido e o código de rastreamento.
+                    </p>
+                    <div style="background: #f3f4f6; padding: 24px; border-radius: 12px; margin-bottom: 32px;">
+                        <p style="font-size: 14px; color: #6b7280; margin: 0;">
+                            📧 Um e-mail de confirmação foi enviado para<br>
+                            <strong style="color: #1f2937;">${document.getElementById('customerEmail').value}</strong>
+                        </p>
+                    </div>
+                    <button onclick="window.location.href='index.html'" style="padding: 16px 32px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                        🏠 Voltar para a loja
+                    </button>
+                </div>
+            `;
+        }
+
+        async function generateBoleto() {
+            const boletoContent = document.getElementById('boleto-content');
+            boletoContent.style.display = 'block';
+            boletoContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Gerando boleto...
+                </div>
+            `;
+
+            setTimeout(() => {
+                boletoContent.innerHTML = `
+                    <div class="alert success">
+                        <span style="font-size: 20px;">✓</span>
+                        <div>
+                            <strong>Boleto gerado com sucesso!</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px;">O boleto também foi enviado para seu e-mail.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 24px 0;">
+                        <button class="btn-copy" onclick="window.open('https://www.mercadopago.com.br/boleto', '_blank')">
+                            📄 Visualizar e Imprimir Boleto
+                        </button>
+                        
+                        <button class="btn-copy" onclick="confirmBoletoPayment()" style="background: #00a650; margin-top: 12px;">
+                            ✓ Confirmar pedido
+                        </button>
+                    </div>
+                    
+                    <p style="font-size: 13px; color: #6b7280; text-align: center;">
+                        <strong>Código de barras:</strong><br>
+                        23793.38128 60007.172389 61000.063305 8 84560000009990
+                    </p>
+                `;
+            }, 2000);
+        }
+
+        function confirmBoletoPayment() {
+            // Limpar carrinho
+            localStorage.removeItem('sportshop_cart');
+            
+            // Mostrar mensagem de sucesso
+            showSuccessMessage();
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.innerHTML = message;
+            
+            const container = document.querySelector('.checkout-section');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Auto-preencher endereço pelo CEP
+        document.getElementById('cep').addEventListener('blur', async function() {
+            const cep = this.value.replace(/\D/g, '');
+            
+            if (cep.length === 8) {
+                try {
+                    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await response.json();
+                    
+                    if (!data.erro) {
+                        document.getElementById('street').value = data.logradouro;
+                        document.getElementById('neighborhood').value = data.bairro;
+                        document.getElementById('city').value = data.localidade;
+                        document.getElementById('state').value = data.uf;
+                        document.getElementById('number').focus();
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar CEP:', error);
+                }
+            }
+        });
+
+        // Máscaras
+        document.getElementById('customerCPF').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        document.getElementById('customerPhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+            value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        document.getElementById('cep').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+
+        // Inicializar
+        window.addEventListener('load', function() {
+            loadCartItems();
+            initMercadoPago();
+        });
+
+        // Carregar itens do carrinho
+        function loadCartItems() {
+            const savedCart = localStorage.getItem('sportshop_cart');
+            
+            if (!savedCart) {
+                alert('⚠️ Seu carrinho está vazio. Redirecionando para a loja...');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const cart = JSON.parse(savedCart);
+            const cartItemsContainer = document.getElementById('cart-items');
+            
+            // Renderizar produtos
+            cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="product-item">
+                    <img src="${item.image || 'https://via.placeholder.com/80'}" class="product-image" alt="${item.name}">
+                    <div class="product-info">
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-price">R$ ${item.price.toFixed(2)}</div>
+                        <div class="product-quantity">Quantidade: ${item.quantity}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Calcular totais
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = subtotal > 200 ? 0 : 15.00; // Frete grátis acima de R$ 200
+            const total = subtotal + shipping;
+
+            // Atualizar valores iniciais (PIX é o padrão)
+            document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('shipping').textContent = shipping === 0 ? 'Grátis' : `R$ ${shipping.toFixed(2).replace('.', ',')}`;
+            document.getElementById('total').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+            // Inicializar com PIX (método padrão)
+            updateOrderSummary('pix');
+
+            // Atualizar valor no formulário de cartão
+            if (cardForm) {
+                cardForm.update({ amount: String(total.toFixed(2)) });
+            }
+        }
+    </script>
+</body>
+</html>

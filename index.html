@@ -183,6 +183,11 @@
                 <i class="fas fa-futbol"></i>
                 <span>Chuteiras</span>
             </button>
+            <button class="category-item" data-category="jaquetas">
+                <i class="fas fa-vest"></i>
+                <span>Jaquetas</span>
+            </button>
+            </button>
             <button class="category-item" data-category="calcoes">
                 <i class="fas fa-person-running"></i>
                 <span>Calções</span>
@@ -211,17 +216,6 @@
                     <span class="total-label">TOTAL:</span>
                     <span id="cartTotal" class="total-value">R$ 0,00</span>
                 </div>
-                <div class="cart-installment-row">
-                    <span class="installment-label">PARCELAR:</span>
-                    <div class="installment-value-wrapper">
-                        <button class="installment-selector-btn" id="installmentSelectorBtn">
-                            <span id="selectedInstallments">12x</span>
-                            <span class="installment-separator">de</span>
-                            <span id="installmentValue" class="installment-value-inline">R$ 0,00</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
             <div class="cart-actions">
                 <button class="back-btn" id="backBtn" aria-label="Fechar">
@@ -241,6 +235,12 @@
     <div class="profile-overlay" id="profileOverlay"></div>
     <aside class="profile-sidebar" id="profileSidebar">
         <div class="profile-container">
+            <!-- Notifications Button -->
+            <button class="notifications-btn" id="notificationsBtn" aria-label="Notificações">
+                <i class="fas fa-bell"></i>
+                <span class="notifications-badge" id="notificationsBadge">3</span>
+            </button>
+            
             <!-- Profile Header -->
             <div class="profile-header">
                 <div class="profile-avatar-section" id="profileAvatarSection">
@@ -382,7 +382,7 @@
             </button>
             <h2>Meus Dados</h2>
         </div>
-        <div class="page-content">
+        <div class="page-content user-data-page-content">
             <div class="user-data-section">
                 <!-- Nome - EDITÁVEL -->
                 <div class="data-item editable" data-field="nome">
@@ -692,6 +692,23 @@
         </div>
     </aside>
 
+    <!-- Notificações Page -->
+    <div class="page-overlay" id="notificacoesOverlay"></div>
+    <aside class="page-sidebar" id="notificacoesPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="notificacoesBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Notificações</h2>
+            <button class="mark-all-read-btn" id="markAllReadBtn" title="Marcar todas como lidas">
+                <i class="fas fa-check-double"></i>
+            </button>
+        </div>
+        <div class="page-content notifications-content" id="notificationsContent">
+            <!-- Notificações serão carregadas aqui -->
+        </div>
+    </aside>
+
     <!-- Meus Pedidos Page -->
     <div class="page-overlay" id="meusPedidosOverlay"></div>
     <aside class="page-sidebar" id="meusPedidosPage">
@@ -706,6 +723,23 @@
         </div>
     </aside>
 
+    <!-- Product Detail Page -->
+    <div class="page-overlay" id="productDetailOverlay"></div>
+    <aside class="page-sidebar product-detail-page" id="productDetailPage">
+        <div class="page-header">
+            <button class="page-back-btn" id="productDetailBackBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Detalhes do Produto</h2>
+            <button class="product-share-btn" id="productShareBtn" title="Compartilhar">
+                <i class="fas fa-share-nodes"></i>
+            </button>
+        </div>
+        <div class="page-content product-detail-content" id="productDetailContent">
+            <!-- Product details will be loaded here -->
+        </div>
+    </aside>
+
     <!-- Configurações Page -->
     <div class="page-overlay" id="configuracoesOverlay"></div>
     <aside class="page-sidebar" id="configuracoesPage">
@@ -715,7 +749,7 @@
             </button>
             <h2>Configurações</h2>
         </div>
-        <div class="page-content">
+        <div class="page-content settings-page-content">
             <div class="settings-section">
                 <h3 class="settings-title">Preferências</h3>
                 
@@ -735,7 +769,7 @@
                 </div>
 
                 <!-- Tema -->
-                <div class="settings-item">
+                <div class="settings-item theme-settings-item">
                     <div class="settings-item-info">
                         <i class="fas fa-palette"></i>
                         <div>
@@ -743,29 +777,29 @@
                             <p>Escolha o tema de sua preferência</p>
                         </div>
                     </div>
-                </div>
-                <div class="theme-options">
-                    <label class="theme-option">
-                        <input type="radio" name="theme" value="light" id="themeLight">
-                        <div class="theme-card">
-                            <i class="fas fa-sun"></i>
-                            <span>Claro</span>
-                        </div>
-                    </label>
-                    <label class="theme-option">
-                        <input type="radio" name="theme" value="dark" id="themeDark">
-                        <div class="theme-card">
-                            <i class="fas fa-moon"></i>
-                            <span>Escuro</span>
-                        </div>
-                    </label>
-                    <label class="theme-option">
-                        <input type="radio" name="theme" value="auto" id="themeAuto" checked>
-                        <div class="theme-card">
-                            <i class="fas fa-circle-half-stroke"></i>
-                            <span>Automático</span>
-                        </div>
-                    </label>
+                    <div class="theme-options">
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="light" id="themeLight">
+                            <div class="theme-card">
+                                <i class="fas fa-sun"></i>
+                                <span>Claro</span>
+                            </div>
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="dark" id="themeDark">
+                            <div class="theme-card">
+                                <i class="fas fa-moon"></i>
+                                <span>Escuro</span>
+                            </div>
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="auto" id="themeAuto" checked>
+                            <div class="theme-card">
+                                <i class="fas fa-circle-half-stroke"></i>
+                                <span>Automático</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -999,17 +1033,6 @@
     </aside>
 
 
-    <!-- Installment Selector Modal -->
-    <div class="modal-overlay" id="installmentSelectorModal">
-        <div class="modal-content installment-selector-content">
-            <div class="modal-body">
-                <div class="installment-options" id="installmentOptions">
-                    <!-- Opções serão preenchidas dinamicamente -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Sort Modal -->
     <div class="modal-overlay" id="sortModal">
         <div class="modal-content sort-modal-content">
@@ -1073,6 +1096,7 @@
         </div>
     </div>
 
+    <script src="api-config.js"></script>
     <script src="products.js"></script>
     <script src="script.js"></script>
 </body>
